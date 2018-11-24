@@ -13,23 +13,23 @@ import (
 var db *gorm.DB
 var err error
 
-// type User struct {
-// 	ID         int    `json:"id"`
-// 	Name       string `json:"name"`
-// 	Created_at string `json:created_at`
-// 	Updated_at string `json:updated_at`
-// }
+type User struct {
+	ID         int    `json:"id"`
+	Name       string `json:"name"`
+	Created_at string `json:created_at`
+	Updated_at string `json:updated_at`
+}
 
 func main() {
 	viper.AutomaticEnv()
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	port := ":" + viper.GetString("port")
 
-	// db, err = gorm.Open("mysql", "root:@tcp(127.0.0.1:3306)/testapi")
-	// if err != nil {
-	// 	panic("failed to connect database")
-	// }
-	// db.AutoMigrate(&User{})
+	db, err = gorm.Open("mysql", "root:@tcp(127.0.0.1:3306)/testapi")
+	if err != nil {
+		panic("failed to connect database")
+	}
+	db.AutoMigrate(&User{})
 
 	e := echo.New()
 	e.GET("/", func(c echo.Context) error {
