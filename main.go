@@ -25,11 +25,11 @@ func main() {
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	port := ":" + viper.GetString("port")
 
-	db, err = gorm.Open("mysql", "root:@tcp(127.0.0.1:3306)/testapi")
-	if err != nil {
-		panic("failed to connect database")
-	}
-	db.AutoMigrate(&User{})
+	// db, err = gorm.Open("mysql", "root:@tcp(127.0.0.1:3306)/testapi")
+	// if err != nil {
+	// 	panic("failed to connect database")
+	// }
+	// db.AutoMigrate(&User{})
 
 	e := echo.New()
 	e.GET("/", func(c echo.Context) error {
@@ -48,34 +48,34 @@ func create(c echo.Context) error {
 	if err := c.Bind(&user); err != nil {
 		return err
 	}
-	db.Create(&user)
+	// db.Create(&user)
 	return c.JSON(http.StatusOK, user)
 }
 
 func list(c echo.Context) error {
 	users := []User{}
-	db.Find(&users)
+	// db.Find(&users)
 	return c.JSON(http.StatusOK, users)
 }
 
 func view(c echo.Context) error {
 	var user User
-	db.First(&user, c.Param("id"))
+	// db.First(&user, c.Param("id"))
 	return c.JSON(http.StatusOK, user)
 }
 
 func update(c echo.Context) error {
 	var user User
-	db.First(&user, c.Param("id"))
-	name := c.FormValue("name")
-	db.Model(&user).Update("Name", name)
+	// db.First(&user, c.Param("id"))
+	// name := c.FormValue("name")
+	// db.Model(&user).Update("Name", name)
 	return c.JSON(http.StatusOK, user)
 }
 
 func delete(c echo.Context) error {
 	var user User
-	db.First(&user, c.Param("id"))
-	db.Delete(&user)
+	// db.First(&user, c.Param("id"))
+	// db.Delete(&user)
 	return c.JSON(http.StatusOK, echo.Map{
 		"result": "success",
 	})
