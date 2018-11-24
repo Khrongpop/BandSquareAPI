@@ -25,10 +25,10 @@ func main() {
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	port := ":" + viper.GetString("port")
 
-	db, err = gorm.Open("mysql", "root:@tcp(127.0.0.1:3306)/testapi")
-	if err != nil {
-		panic("failed to connect database")
-	}
+	// db, err = gorm.Open("mysql", "root:@tcp(127.0.0.1:3306)/testapi")
+	// if err != nil {
+	// 	panic("failed to connect database")
+	// }
 	// db.AutoMigrate(&User{})
 
 	e := echo.New()
