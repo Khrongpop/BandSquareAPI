@@ -13,12 +13,12 @@ import (
 var db *gorm.DB
 var err error
 
-// type User struct {
-// 	ID         int    `json:"id"`
-// 	Name       string `json:"name"`
-// 	Created_at string `json:created_at`
-// 	Updated_at string `json:updated_at`
-// }
+type User struct {
+	ID         int    `json:"id"`
+	Name       string `json:"name"`
+	Created_at string `json:created_at`
+	Updated_at string `json:updated_at`
+}
 
 func main() {
 	viper.AutomaticEnv()
