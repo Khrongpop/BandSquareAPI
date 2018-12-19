@@ -54,6 +54,7 @@ func main() {
 	e.PUT("/users/:id", update)
 	e.DELETE("/users/:id", delete)
 
+	e.GET("/bands", bandslist)
 	e.GET("/db/refesh", refreshDB)
 
 	e.Logger.Fatal(e.Start(port))
@@ -79,6 +80,21 @@ func list(c echo.Context) error {
 		// users[i].Band = band
 	}
 	return c.JSON(http.StatusOK, users)
+}
+
+func bandslist(c echo.Context) error {
+	bands := []model.Band{}
+	db.Find(&bands)
+	for i, _ := range bands {
+		// db.Model(&users[i]).Related(&users[i].Role)
+		// db.Model(&users[i]).Related(&users[i].Band)
+		// users[i].Band = band
+		db.Model(&bands[i]).Related(&bands[i].Types)
+		// for i, _ := range bands[i].Types {
+		// db.Model(&bands[i].Types[i]).Related(&bands[i].Types[i].Type)
+		// }
+	}
+	return c.JSON(http.StatusOK, bands)
 }
 
 func view(c echo.Context) error {
