@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"github.com/khrongpop/BandSquareAPI/model"
 	"github.com/labstack/echo"
 	"github.com/spf13/viper"
 	"golang.org/x/crypto/bcrypt"
@@ -14,22 +16,6 @@ import (
 
 var db *gorm.DB
 var err error
-
-type User struct {
-	gorm.Model
-	Name      string `json:"name"`
-	Email     string `json:"email"`
-	Password  string `json:"password"`
-	Image     string `json:"image"`
-	Thumbnail string `json:"thumbnail"`
-	RoleID    uint   `json:role_id`
-	Role      Role
-}
-type Role struct {
-	gorm.Model
-	Name string `json:"name"`
-	Slug string `json:"slug"`
-}
 
 func main() {
 	viper.AutomaticEnv()
@@ -41,9 +27,9 @@ func main() {
 	mysqlPass := "1642c1e7"
 	mysqlHost := "us-cdbr-iron-east-01.cleardb.net"
 	mysqlName := "heroku_a5a40c45511bb84"
+	mysqlConfig := "?parseTime=true"
 
-	databaseURL := fmt.Sprintf("%v:%v@tcp(%v)/%v", mysqlUser, mysqlPass, mysqlHost, mysqlName)
-	// DATABASE_URL := "b85b02f8218929:1642c1e7@tcp(us-cdbr-iron-east-01.cleardb.net)/heroku_a5a40c45511bb84"
+	databaseURL := fmt.Sprintf("%v:%v@tcp(%v)/%v%v", mysqlUser, mysqlPass, mysqlHost, mysqlName, mysqlConfig)
 	db, err = gorm.Open("mysql", databaseURL)
 	if err != nil {
 		panic("failed to connect database")
@@ -67,12 +53,15 @@ func main() {
 	e.GET("/users/:id", view)
 	e.PUT("/users/:id", update)
 	e.DELETE("/users/:id", delete)
+
+	e.GET("/db/refesh", refreshDB)
+
 	e.Logger.Fatal(e.Start(port))
 
 }
 
 func create(c echo.Context) error {
-	var user User
+	var user model.User
 	if err := c.Bind(&user); err != nil {
 		return err
 	}
@@ -82,19 +71,22 @@ func create(c echo.Context) error {
 }
 
 func list(c echo.Context) error {
-	users := []User{}
+	users := []model.User{}
 	db.Find(&users)
+
 	return c.JSON(http.StatusOK, users)
 }
 
 func view(c echo.Context) error {
-	var user User
+	var user model.User
 	db.First(&user, c.Param("id"))
+	var role model.Role
+	db.Model(&user).Related(&role)
 	return c.JSON(http.StatusOK, user)
 }
 
 func update(c echo.Context) error {
-	var user User
+	var user model.User
 	db.First(&user, c.Param("id"))
 	name := c.FormValue("name")
 	db.Model(&user).Update("Name", name)
@@ -102,7 +94,7 @@ func update(c echo.Context) error {
 }
 
 func delete(c echo.Context) error {
-	var user User
+	var user model.User
 	db.First(&user, c.Param("id"))
 	db.Delete(&user)
 	return c.JSON(http.StatusOK, echo.Map{
@@ -110,53 +102,65 @@ func delete(c echo.Context) error {
 	})
 }
 
+func refreshDB(c echo.Context) error {
+	dropTable()
+	db.AutoMigrate(&model.Role{}, &model.User{})
+	dataSeed()
+	return c.JSON(http.StatusOK, echo.Map{
+		"result": "refres-success",
+	})
+}
+
 func dbSetup() {
 	// dropTable()
-	db.AutoMigrate(&Role{}, &User{})
+	db.AutoMigrate(&model.Role{}, &model.User{})
 	dataSeed()
 }
 func dropTable() {
-	db.DropTable(&User{}, &Role{})
+	db.DropTable(&model.User{}, &model.Role{})
 }
 func dataSeed() {
 	// t := time.Now()
 	// t.Format("2006-01-02 15:04:05")
 	roleSeed()
 	userSeed()
-	db.Model(&User{}).AddForeignKey("role_id", "roles(id)", "cascade", "RESTRICT")
+	db.Model(&model.User{}).AddForeignKey("role_id", "roles(id)", "cascade", "RESTRICT")
 }
 
 func userSeed() {
-
-	db.Create(&User{
+	t := time.Now()
+	t.Format("2006-01-02 15:04:05")
+	db.Create(&model.User{
 		Name:      "Darin",
 		Email:     "darin@gmail.com",
 		Password:  hashAndSalt([]byte("123456")),
 		Image:     "https://lensod-user-statics.s3-ap-southeast-1.amazonaws.com/85f3122e-83fd-4dc5-ac5f-3131f9e7b259.jpeg",
 		Thumbnail: "https://lensod-user-statics.s3-ap-southeast-1.amazonaws.com/85f3122e-83fd-4dc5-ac5f-3131f9e7b259.jpeg",
 		RoleID:    11,
+		// CreateAT:  time.Now(),
 	})
 
-	db.Create(&User{
+	db.Create(&model.User{
 		Name:      "Muang",
 		Email:     "muang@gmail.com",
 		Password:  hashAndSalt([]byte("123456")),
 		Image:     "https://graph.facebook.com/2343960062310644/picture?type=large&return_ssl_resources=1",
 		Thumbnail: "https://graph.facebook.com/2343960062310644/picture?type=large&return_ssl_resources=1",
 		RoleID:    1,
+		// CreateAT:  time.Now(),
 	})
 }
 
 func roleSeed() {
-	db.Create(&Role{
+	db.Create(&model.Role{
 		Name: "Member",
 		Slug: "Member",
 	})
-	db.Create(&Role{
+	db.Create(&model.Role{
 		Name: "Musician",
 		Slug: "Music",
 	})
-	db.Create(&Role{
+	db.Create(&model.Role{
 		Name: "Administrator",
 		Slug: "Admin",
 	})
