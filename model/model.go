@@ -5,23 +5,23 @@ import (
 )
 
 type Role struct {
-	ID   uint   `gorm:"primary_key" json:"id"`
+	ID   int    `gorm:"primary_key" json:"id"`
 	Name string `json:"name"`
 	Slug string `json:"slug"`
 }
 
 type User struct {
 	// gorm.Model
-	ID        uint      `gorm:"primary_key" json:"id"`
-	Name      string    `json:"name"`
-	Email     string    `json:"email"`
-	Password  string    `json:"password"`
-	Image     string    `json:"image"`
-	Thumbnail string    `json:"thumbnail"`
-	Active    uint      `json:"active"`
-	RoleID    uint      `json:"role_id"`
-	Role      Role      `json:"role"`
-	Band      Band      `json:"band"`
+	ID        uint   `gorm:"primary_key" json:"id"`
+	Name      string `json:"name"`
+	Email     string `json:"email"`
+	Password  string `json:"password"`
+	Image     string `json:"image"`
+	Thumbnail string `json:"thumbnail"`
+	Active    int8   `json:"active"`
+	RoleID    int8   `json:"role_id"`
+	Role      Role   `json:"role"`
+	// Band      Band      `json:"band"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }

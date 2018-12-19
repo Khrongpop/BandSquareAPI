@@ -44,9 +44,14 @@ func main() {
 	// check2 := comparePasswords(passLog, []byte("1234"))
 
 	e := echo.New()
+
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Hello, World! test"+datasource)
 	})
+
+	auth := e.Group("/auth")
+	auth.POST("/login", login)
+	auth.POST("/register", register)
 
 	e.POST("/create", create)
 	e.GET("/users", list)
@@ -54,11 +59,47 @@ func main() {
 	e.PUT("/users/:id", update)
 	e.DELETE("/users/:id", delete)
 
-	e.GET("/bands", bandslist)
+	bands := e.Group("/bands")
+	bands.GET("/bands", bandslist)
+
 	e.GET("/db/refesh", refreshDB)
 
 	e.Logger.Fatal(e.Start(port))
 
+}
+
+func login(c echo.Context) error {
+	var user model.User
+	name := c.FormValue("name")
+	if err := db.Where("name = ?", name).Or("email = ?", name).First(&user).Error; gorm.IsRecordNotFoundError(err) {
+		return c.JSON(http.StatusOK, "invalid user")
+	}
+	password := c.FormValue("password")
+	check := comparePasswords(user.Password, []byte(password))
+	if check {
+		db.Model(&user).Related(&user.Role)
+		return c.JSON(http.StatusOK, user)
+	} else {
+		return c.JSON(http.StatusOK, "invalid password")
+	}
+}
+
+func register(c echo.Context) error {
+	var user model.User
+	name := c.FormValue("name")
+	if err := db.Where("name = ?", name).Or("email = ?", name).First(&user).Error; gorm.IsRecordNotFoundError(err) {
+		user.Name = name
+		user.Email = c.FormValue("email")
+		user.Active = 0
+		user.Password = hashAndSalt([]byte(c.FormValue("password")))
+		user.Image = c.FormValue("image")
+		user.Thumbnail = c.FormValue("image")
+		user.RoleID = 1
+		db.Create(&user)
+		db.Model(&user).Related(&user.Role)
+		return c.JSON(http.StatusOK, user)
+	}
+	return c.JSON(http.StatusOK, "already have an user")
 }
 
 func create(c echo.Context) error {
@@ -76,7 +117,7 @@ func list(c echo.Context) error {
 	db.Find(&users)
 	for i, _ := range users {
 		db.Model(&users[i]).Related(&users[i].Role)
-		db.Model(&users[i]).Related(&users[i].Band)
+		// db.Model(&users[i]).Related(&users[i].Band)
 		// users[i].Band = band
 	}
 	return c.JSON(http.StatusOK, users)
@@ -101,7 +142,7 @@ func view(c echo.Context) error {
 	var user model.User
 	db.First(&user, c.Param("id"))
 	db.Model(&user).Related(&user.Role)
-	db.Model(&user).Related(&user.Band)
+	// db.Model(&user).Related(&user.Band)
 
 	return c.JSON(http.StatusOK, user)
 }
