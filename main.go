@@ -33,8 +33,8 @@ type Role struct {
 
 func main() {
 	viper.AutomaticEnv()
-	port := ":" + viper.GetString("port")
-	// port := ":1323"
+	// port := ":" + viper.GetString("port")
+	port := ":1323"
 	datasource := viper.GetString("CLEARDB_DATABASE_URL")
 
 	mysqlUser := "b85b02f8218929"
@@ -42,9 +42,9 @@ func main() {
 	mysqlHost := "us-cdbr-iron-east-01.cleardb.net"
 	mysqlName := "heroku_a5a40c45511bb84"
 
-	DATABASE_URL := fmt.Sprintf("%v:%v@tcp(%v)/%v", mysqlUser, mysqlPass, mysqlHost, mysqlName)
+	databaseURL := fmt.Sprintf("%v:%v@tcp(%v)/%v", mysqlUser, mysqlPass, mysqlHost, mysqlName)
 	// DATABASE_URL := "b85b02f8218929:1642c1e7@tcp(us-cdbr-iron-east-01.cleardb.net)/heroku_a5a40c45511bb84"
-	db, err = gorm.Open("mysql", DATABASE_URL)
+	db, err = gorm.Open("mysql", databaseURL)
 	if err != nil {
 		panic("failed to connect database")
 	}
@@ -76,7 +76,8 @@ func create(c echo.Context) error {
 	if err := c.Bind(&user); err != nil {
 		return err
 	}
-	// db.Create(&user)
+	db.Create(&user)
+	// name := c.FormValue("name")
 	return c.JSON(http.StatusOK, user)
 }
 
@@ -110,15 +111,18 @@ func delete(c echo.Context) error {
 }
 
 func dbSetup() {
-	db.AutoMigrate(&User{})
-	db.AutoMigrate(&Role{})
-	// dataSeed()
+	// dropTable()
+	db.AutoMigrate(&Role{}, &User{})
+	dataSeed()
+}
+func dropTable() {
+	db.DropTable(&User{}, &Role{})
 }
 func dataSeed() {
 	// t := time.Now()
 	// t.Format("2006-01-02 15:04:05")
-	userSeed()
 	roleSeed()
+	userSeed()
 	db.Model(&User{}).AddForeignKey("role_id", "roles(id)", "cascade", "RESTRICT")
 }
 
