@@ -36,13 +36,6 @@ func main() {
 	}
 	defer db.Close()
 
-	// migration.DBSetup(db)
-	// fmt.Println("pass")
-	// pass := "123456"
-	// passLog := hashAndSalt([]byte(pass))
-	// check := comparePasswords(passLog, []byte(pass))
-	// check2 := comparePasswords(passLog, []byte("1234"))
-
 	e := echo.New()
 
 	e.GET("/", func(c echo.Context) error {
@@ -90,7 +83,7 @@ func register(c echo.Context) error {
 	if err := db.Where("name = ?", name).Or("email = ?", name).First(&user).Error; gorm.IsRecordNotFoundError(err) {
 		user.Name = name
 		user.Email = c.FormValue("email")
-		user.Active = 0
+		user.Active = true
 		user.Password = hashAndSalt([]byte(c.FormValue("password")))
 		user.Image = c.FormValue("image")
 		user.Thumbnail = c.FormValue("image")
