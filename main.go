@@ -72,11 +72,11 @@ func create(c echo.Context) error {
 
 func list(c echo.Context) error {
 	users := []model.User{}
-	var role model.Role
 	db.Find(&users)
-	for i, user := range users {
-		db.First(&role, user.RoleID)
-		users[i].Role = role
+	for i, _ := range users {
+		db.Model(&users[i]).Related(&users[i].Role)
+		db.Model(&users[i]).Related(&users[i].Band)
+		// users[i].Band = band
 	}
 	return c.JSON(http.StatusOK, users)
 }
@@ -84,9 +84,9 @@ func list(c echo.Context) error {
 func view(c echo.Context) error {
 	var user model.User
 	db.First(&user, c.Param("id"))
-	var role model.Role
-	db.First(&role, user.RoleID)
-	user.Role = role
+	db.Model(&user).Related(&user.Role)
+	db.Model(&user).Related(&user.Band)
+
 	return c.JSON(http.StatusOK, user)
 }
 
