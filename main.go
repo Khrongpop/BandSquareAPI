@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"github.com/khrongpop/BandSquareAPI/migration"
 	"github.com/khrongpop/BandSquareAPI/model"
 	"github.com/labstack/echo"
 	"github.com/spf13/viper"
@@ -35,13 +35,13 @@ func main() {
 		panic("failed to connect database")
 	}
 	defer db.Close()
+
+	// migration.DBSetup(db)
 	// fmt.Println("pass")
 	// pass := "123456"
 	// passLog := hashAndSalt([]byte(pass))
 	// check := comparePasswords(passLog, []byte(pass))
 	// check2 := comparePasswords(passLog, []byte("1234"))
-
-	dbSetup()
 
 	e := echo.New()
 	e.GET("/", func(c echo.Context) error {
@@ -72,8 +72,12 @@ func create(c echo.Context) error {
 
 func list(c echo.Context) error {
 	users := []model.User{}
+	var role model.Role
 	db.Find(&users)
-
+	for i, user := range users {
+		db.First(&role, user.RoleID)
+		users[i].Role = role
+	}
 	return c.JSON(http.StatusOK, users)
 }
 
@@ -81,7 +85,8 @@ func view(c echo.Context) error {
 	var user model.User
 	db.First(&user, c.Param("id"))
 	var role model.Role
-	db.Model(&user).Related(&role)
+	db.First(&role, user.RoleID)
+	user.Role = role
 	return c.JSON(http.StatusOK, user)
 }
 
@@ -103,66 +108,9 @@ func delete(c echo.Context) error {
 }
 
 func refreshDB(c echo.Context) error {
-	dropTable()
-	db.AutoMigrate(&model.Role{}, &model.User{})
-	dataSeed()
+	migration.RefreshDB(db)
 	return c.JSON(http.StatusOK, echo.Map{
 		"result": "refres-success",
-	})
-}
-
-func dbSetup() {
-	// dropTable()
-	db.AutoMigrate(&model.Role{}, &model.User{})
-	dataSeed()
-}
-func dropTable() {
-	db.DropTable(&model.User{}, &model.Role{})
-}
-func dataSeed() {
-	// t := time.Now()
-	// t.Format("2006-01-02 15:04:05")
-	roleSeed()
-	userSeed()
-	db.Model(&model.User{}).AddForeignKey("role_id", "roles(id)", "cascade", "RESTRICT")
-}
-
-func userSeed() {
-	t := time.Now()
-	t.Format("2006-01-02 15:04:05")
-	db.Create(&model.User{
-		Name:      "Darin",
-		Email:     "darin@gmail.com",
-		Password:  hashAndSalt([]byte("123456")),
-		Image:     "https://lensod-user-statics.s3-ap-southeast-1.amazonaws.com/85f3122e-83fd-4dc5-ac5f-3131f9e7b259.jpeg",
-		Thumbnail: "https://lensod-user-statics.s3-ap-southeast-1.amazonaws.com/85f3122e-83fd-4dc5-ac5f-3131f9e7b259.jpeg",
-		RoleID:    11,
-		// CreateAT:  time.Now(),
-	})
-
-	db.Create(&model.User{
-		Name:      "Muang",
-		Email:     "muang@gmail.com",
-		Password:  hashAndSalt([]byte("123456")),
-		Image:     "https://graph.facebook.com/2343960062310644/picture?type=large&return_ssl_resources=1",
-		Thumbnail: "https://graph.facebook.com/2343960062310644/picture?type=large&return_ssl_resources=1",
-		RoleID:    1,
-		// CreateAT:  time.Now(),
-	})
-}
-
-func roleSeed() {
-	db.Create(&model.Role{
-		Name: "Member",
-		Slug: "Member",
-	})
-	db.Create(&model.Role{
-		Name: "Musician",
-		Slug: "Music",
-	})
-	db.Create(&model.Role{
-		Name: "Administrator",
-		Slug: "Admin",
 	})
 }
 
