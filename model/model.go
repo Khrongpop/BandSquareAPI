@@ -11,6 +11,7 @@ type User struct {
 	Password  string `json:"password"`
 	Image     string `json:"image"`
 	Thumbnail string `json:"thumbnail"`
+	Active    uint   `json:active`
 	RoleID    uint   `json:role_id`
 	Role      Role
 }
