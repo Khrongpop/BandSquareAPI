@@ -20,6 +20,7 @@ var db *gorm.DB
 var err error
 
 func main() {
+
 	viper.AutomaticEnv()
 	port := ":" + viper.GetString("port")
 	// port := ":1323"
@@ -37,7 +38,7 @@ func main() {
 		panic("failed to connect database")
 	}
 	defer db.Close()
-
+	// migration.DBSetup(db)
 	e := echo.New()
 
 	e.GET("/", func(c echo.Context) error {
@@ -107,6 +108,7 @@ func fblogin(c echo.Context) error {
 		user.Email = c.FormValue("email")
 		user.Active = true
 		user.Password = hashAndSalt([]byte(strconv.Itoa(rand.Intn(100))))
+		// user.Password = hashAndSalt([]byte("sadsad"))
 		user.Image = "https://graph.facebook.com/" + providerID + "/picture?type=large&return_ssl_resources=1"
 		user.Thumbnail = "https://graph.facebook.com/" + providerID + "/picture"
 		user.RoleID = 1

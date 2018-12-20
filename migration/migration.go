@@ -16,8 +16,8 @@ func DropTable(db *gorm.DB) {
 
 func DBSetup(db *gorm.DB) {
 	// db.DropTable(&model.Band{}, &model.User{}, &model.Role{})
-	db.AutoMigrate(&model.Role{}, &model.User{}, &model.Band{}, &model.BandType{})
-	dataSeed(db)
+	db.AutoMigrate(&model.Role{}, &model.User{}, &model.SocailAccount{}, &model.Band{}, &model.BandType{})
+	// dataSeed(db)
 }
 
 func dataSeed(db *gorm.DB) {
@@ -42,6 +42,6 @@ func RefreshDB(db *gorm.DB) {
 	// db.DropTable(&model.BandType{}, &model.Band{}, &model.User{}, &model.Category{}, &model.Genre{}, &model.Type{}, &model.Role{})
 	db.DropTable(&model.BandType{}, &model.Band{}, &model.User{})
 	fmt.Println("migrate table ...")
-	db.AutoMigrate(&model.Role{}, &model.User{}, &model.Band{}, &model.BandType{})
+	db.AutoMigrate(&model.Role{}, &model.User{}, &model.SocailAccount{}, &model.Band{}, &model.BandType{})
 	dataSeed(db)
 }
