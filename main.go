@@ -119,7 +119,7 @@ func fblogin(c echo.Context) error {
 		return c.JSON(http.StatusOK, user)
 	}
 	if err := db.First(&user, fb.UserID).Error; gorm.IsRecordNotFoundError(err) {
-		return c.JSON(http.StatusOK, "err : "+err.Error)
+		log.Fatal(err)
 	}
 	db.Model(&user).Related(&user.Role)
 	return c.JSON(http.StatusOK, user)
@@ -221,8 +221,4 @@ func comparePasswords(hashedPwd string, plainPwd []byte) bool {
 	}
 
 	return true
-}
-
-type error interface {
-	Error() string
 }
