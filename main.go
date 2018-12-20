@@ -167,8 +167,6 @@ func bandCheap(c echo.Context) error {
 }
 
 func bandDetail(c echo.Context) error {
-	var bands []model.Band
-	db.Joins("JOIN users ON bands.user_id = users.id AND bands.max_price < ?", 25000).Find(&bands)
 	var band model.Band
 	var user model.User
 	var bandType []model.BandType
@@ -179,8 +177,8 @@ func bandDetail(c echo.Context) error {
 	if err := db.Where("band_id = ?", band.ID).Find(&bandType).Error; gorm.IsRecordNotFoundError(err) {
 
 	}
-	categoriesList := ""
 
+	categoriesList := ""
 	for i := range bandType {
 		db.Model(&bandType[i]).Related(&bandType[i].Type)
 		categoriesList += bandType[i].Type.Name
@@ -188,9 +186,12 @@ func bandDetail(c echo.Context) error {
 			categoriesList += " , "
 		}
 	}
-
 	band.Types = bandType
 	band.CategoryList = &categoriesList
+
+	db.Model(&band).Related(&band.Genres, "Genres")
+	genresList := model.GetGenreList(band)
+	band.GenreList = &genresList
 
 	return c.JSON(http.StatusOK, band)
 }

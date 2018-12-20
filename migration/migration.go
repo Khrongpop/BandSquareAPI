@@ -16,7 +16,7 @@ func DropTable(db *gorm.DB) {
 
 func DBSetup(db *gorm.DB) {
 	// db.DropTable(&model.Band{}, &model.User{}, &model.Role{})
-	db.AutoMigrate(&model.Role{}, &model.User{}, &model.SocailAccount{}, &model.Band{}, &model.BandType{})
+	db.AutoMigrate(&model.User{}, &model.SocailAccount{}, &model.Band{}, &model.BandType{})
 	// dataSeed(db)
 }
 
@@ -30,12 +30,13 @@ func dataSeed(db *gorm.DB) {
 	// seeder.TypeSeed(db)
 	// seeder.UserSeed(db)
 	// seeder.BandSeed(db)
-	seeder.BandTypeSeed(db)
+	// seeder.BandTypeSeed(db)
+	seeder.BandGenreSeed(db)
 	// db.Model(&model.User{}).AddForeignKey("role_id", "roles(id)", "cascade", "RESTRICT")
 	// db.Model(&model.SocailAccount{}).AddForeignKey("user_id", "users(id)", "cascade", "RESTRICT")
 	// db.Model(&model.Band{}).AddForeignKey("user_id", "users(id)", "cascade", "RESTRICT")
-	db.Model(&model.BandType{}).AddForeignKey("band_id", "bands(id)", "cascade", "RESTRICT")
-	db.Model(&model.BandType{}).AddForeignKey("type_id", "types(id)", "cascade", "RESTRICT")
+	// db.Model(&model.BandType{}).AddForeignKey("band_id", "bands(id)", "cascade", "RESTRICT")
+	// db.Model(&model.BandType{}).AddForeignKey("type_id", "types(id)", "cascade", "RESTRICT")
 }
 
 func RefreshDB(db *gorm.DB) {
@@ -44,6 +45,7 @@ func RefreshDB(db *gorm.DB) {
 	// db.DropTable(&model.BandType{}, &model.Band{}, &model.User{})
 	// db.DropTable(&model.BandType{})
 	fmt.Println("migrate table ...")
-	db.AutoMigrate(&model.Role{}, &model.User{}, &model.SocailAccount{}, &model.Band{}, &model.BandType{})
+	db.AutoMigrate(&model.User{}, &model.SocailAccount{}, &model.Band{}, &model.BandType{})
 	dataSeed(db)
+	fmt.Println("migrate complete !!!")
 }
