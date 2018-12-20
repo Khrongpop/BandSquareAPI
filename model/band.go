@@ -18,6 +18,7 @@ type Band struct {
 	User         *User      `json:"user"`
 	Types        []BandType `json:"types"`
 	Genres       []Genre    `gorm:"many2many:band_genres;" json:"genres `
+	Categories   []Category `gorm:"many2many:band_categories;" json:"categories `
 	CategoryList *string    `json:"categores_list"`
 	GenreList    *string    `json:"genres_list"`
 	Bookings     []Booking  `json:"bookings"`
@@ -37,6 +38,11 @@ type BandType struct {
 type BandGenre struct {
 	BandID  int `gorm:"primary_key:true" json:"band_id"`
 	GenreID int `gorm:"primary_key:true" json:"genre_id"`
+}
+
+type BandCategory struct {
+	BandID     int `gorm:"primary_key:true" json:"band_id"`
+	CategoryID int `gorm:"primary_key:true" json:"category_id"`
 }
 
 func GetGenreList(band Band) string {
