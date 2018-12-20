@@ -64,9 +64,9 @@ func main() {
 
 	bands := e.Group("/band")
 	bands.GET("/bands", bandslist)
-	bands.POST("/recommend", bandslist)
+	bands.GET("/recommend", bandRecommend)
 	bands.GET("/onlines", bandOnline)
-	bands.POST("/news", bandOnline)
+	bands.GET("/news", bandNew)
 	bands.GET("/cheaps", bandCheap)
 	bands.GET("/detail/:id", bandDetail)
 
@@ -115,10 +115,10 @@ func fblogin(c echo.Context) error {
 	var user model.User
 	providerID := c.FormValue("id")
 
-	if err := db.Where("provider_id = ?", providerID).First(&fb).Error; gorm.IsRecordNotFoundError(err) {
+	if err := db.First(&fb, "provider_id = ?", providerID).Error; gorm.IsRecordNotFoundError(err) {
 		name := c.FormValue("name")
 		email := c.FormValue("email")
-		if err := db.Where("email = ?", email).First(&user).Error; gorm.IsRecordNotFoundError(err) {
+		if err := db.First(&user, "email = ?", email).Error; gorm.IsRecordNotFoundError(err) {
 			user.Name = name
 			user.Email = email
 			user.Active = true
@@ -148,6 +148,22 @@ func fblogin(c echo.Context) error {
 	return c.JSON(http.StatusOK, user)
 }
 
+func bandRecommend(c echo.Context) error {
+	var bands []model.Band
+	db.Table("bands").Select("* ,AVG(reviews.rate) as avg").Joins("JOIN reviews ON reviews.band_id = bands.id ").Group("bands.user_id").Order("avg desc").Scan(&bands)
+	for i, _ := range bands {
+		db.Model(&bands[i]).Related(&bands[i].Reviews)
+		rateAvg := model.GetRateAVG(bands[i].Reviews)
+		bands[i].RateAvg = &rateAvg
+	}
+
+	return c.JSON(http.StatusOK, bands)
+}
+
+func getBandDeatil(band model.Band) {
+
+}
+
 func bandOnline(c echo.Context) error {
 	var bands []model.Band
 	db.Joins("JOIN users ON bands.user_id = users.id AND users.active = ?", 1).Find(&bands)
@@ -160,9 +176,14 @@ func bandOnline(c echo.Context) error {
 	return c.JSON(http.StatusOK, bands)
 }
 
+func bandNew(c echo.Context) error {
+	var bands []model.Band
+	return c.JSON(http.StatusOK, bands)
+}
+
 func bandCheap(c echo.Context) error {
 	var bands []model.Band
-	db.Joins("JOIN users ON bands.user_id = users.id AND bands.max_price < ?", 25000).Find(&bands)
+	db.Find(&bands, "max_price < ?", 15000)
 	for i, band := range bands {
 		var user model.User
 		db.First(&user, band.UserID)
@@ -180,7 +201,7 @@ func bandDetail(c echo.Context) error {
 	db.First(&band, c.Param("id"))
 	db.First(&user, band.UserID)
 	band.User = &user
-	if err := db.Where("band_id = ?", band.ID).Find(&bandType).Error; gorm.IsRecordNotFoundError(err) {
+	if err := db.Find(&bandType, "band_id = ?", band.ID).Error; gorm.IsRecordNotFoundError(err) {
 
 	}
 

@@ -30,7 +30,7 @@ func ReviewSeed(db *gorm.DB) {
 	})
 	db.Create(&model.Review{
 		ID:        3,
-		BandID:    15,
+		BandID:    4,
 		UserID:    4,
 		BookingID: 5,
 		Rate:      5,
@@ -45,5 +45,14 @@ func ReviewSeed(db *gorm.DB) {
 		Rate:      4,
 		Detail:    `Good Band`,
 		CreatedAt: time.Now().AddDate(0, -2, 0).Add(50 * time.Hour).Add(50 * time.Minute),
+	})
+	db.Create(&model.Review{
+		ID:        5,
+		BandID:    3,
+		UserID:    17,
+		BookingID: 7,
+		Rate:      4,
+		Detail:    `Good Work`,
+		CreatedAt: time.Now().AddDate(0, -2, 0).Add(50 * time.Hour).Add(59 * time.Minute),
 	})
 }
