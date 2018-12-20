@@ -7,7 +7,7 @@ import (
 type Booking struct {
 	ID               uint      `gorm:"primary_key" json:"id"`
 	UserID           uint      `json:"user_id"`
-	BandID           uint      `json:"band_id"`
+	BandID           *uint     `gorm:"nullable" json:"band_id"`
 	CategoryID       uint      `json:"category_id"`
 	TypeID           uint      `json:"type_id"`
 	Status           int       `gorm:"default:0" json:"status"`
@@ -16,7 +16,7 @@ type Booking struct {
 	Location         string    `json:"location"`
 	Date             time.Time `json:"date"`
 	Time             time.Time `json:"time"`
-	Duration         time.Time `json:"duration"`
+	Duration         string    `json:"duration"`
 	Price            float64   `json:"price"`
 	Instrument       bool      `gorm:"default:false" json:"instrument"`
 	InstrumentDetail *string   `json:"instrument_detail"`
