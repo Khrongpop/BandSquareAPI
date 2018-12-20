@@ -50,15 +50,11 @@ type BandType struct {
 	Band   Band   `json:"band"`
 	Type   Type   `json:"type"`
 }
-type Category struct {
-	ID   uint   `gorm:"primary_key" json:"id"`
-	Name string `json:"name"`
-}
-type Genre struct {
-	ID   uint   `gorm:"primary_key" json:"id"`
-	Name string `json:"name"`
-}
-type Type struct {
-	ID   uint   `gorm:"primary_key" json:"id"`
-	Name string `json:"name"`
+
+type SocailAccount struct {
+	ID         uint   `gorm:"primary_key" json:"id"`
+	UserID     uint   `json:"user_id"`
+	ProviderID string `json:"provider_id"`
+	Provider   string `json:"provider"`
+	// 	// 2343960062310644
 }

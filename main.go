@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
+	"strconv"
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
@@ -19,8 +21,8 @@ var err error
 
 func main() {
 	viper.AutomaticEnv()
-	// port := ":" + viper.GetString("port")
-	port := ":1323"
+	port := ":" + viper.GetString("port")
+	// port := ":1323"
 	datasource := viper.GetString("CLEARDB_DATABASE_URL")
 
 	mysqlUser := "b85b02f8218929"
@@ -45,6 +47,7 @@ func main() {
 	auth := e.Group("/auth")
 	auth.POST("/login", login)
 	auth.POST("/register", register)
+	auth.POST("/fblogin", fblogin)
 
 	e.POST("/create", create)
 	e.GET("/users", list)
@@ -93,6 +96,33 @@ func register(c echo.Context) error {
 		return c.JSON(http.StatusOK, user)
 	}
 	return c.JSON(http.StatusOK, "already have an user")
+}
+
+func fblogin(c echo.Context) error {
+	var fb model.SocailAccount
+	var user model.User
+	providerID := c.FormValue("id")
+	if err := db.Where("provider_user_id = ?", providerID).First(fb).Error; gorm.IsRecordNotFoundError(err) {
+		user.Name = c.FormValue("name")
+		user.Email = c.FormValue("email")
+		user.Active = true
+		user.Password = hashAndSalt([]byte(strconv.Itoa(rand.Intn(100))))
+		user.Image = "https://graph.facebook.com/" + providerID + "/picture?type=large&return_ssl_resources=1"
+		user.Thumbnail = "https://graph.facebook.com/" + providerID + "/picture"
+		user.RoleID = 1
+		db.Create(&user)
+		db.Model(&user).Related(&user.Role)
+		fb.UserID = user.ID
+		fb.ProviderID = providerID
+		fb.Provider = c.FormValue("provider")
+		db.Create(&fb)
+		return c.JSON(http.StatusOK, user)
+	}
+	if err := db.First(&user, fb.UserID).Error; gorm.IsRecordNotFoundError(err) {
+		return c.JSON(http.StatusOK, "err : "+err.Error)
+	}
+	db.Model(&user).Related(&user.Role)
+	return c.JSON(http.StatusOK, user)
 }
 
 func create(c echo.Context) error {
@@ -191,4 +221,8 @@ func comparePasswords(hashedPwd string, plainPwd []byte) bool {
 	}
 
 	return true
+}
+
+type error interface {
+	Error() string
 }
