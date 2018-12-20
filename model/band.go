@@ -21,6 +21,8 @@ type Band struct {
 	CategoryList *string    `json:"categores_list"`
 	GenreList    *string    `json:"genres_list"`
 	Bookings     []Booking  `json:"bookings"`
+	Reviews      []Review   `json:"reviews"`
+	RateAvg      *float32   `json:"rate_avg"`
 }
 
 type BandType struct {
@@ -47,4 +49,17 @@ func GetGenreList(band Band) string {
 		}
 	}
 	return genresList
+}
+
+func GetRateAVG(reviews []Review) float32 {
+	rateAvg := float32(0)
+	reviewCount := len(reviews)
+	if reviewCount > 0 {
+		rateSum := float32(0)
+		for _, review := range reviews {
+			rateSum += review.Rate
+		}
+		rateAvg = rateSum / float32(reviewCount)
+	}
+	return rateAvg
 }
