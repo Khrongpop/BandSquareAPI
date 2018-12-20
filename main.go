@@ -198,7 +198,13 @@ func bandDetail(c echo.Context) error {
 	db.Model(&band).Related(&band.Genres, "Genres")
 	genresList := model.GetGenreList(band)
 	band.GenreList = &genresList
+	db.Model(&band).Related(&band.Bookings)
 
+	for i := range band.Bookings {
+		db.Model(&band.Bookings[i]).Related(&band.Bookings[i].User)
+		db.Model(&band.Bookings[i]).Related(&band.Bookings[i].Category)
+		db.Model(&band.Bookings[i]).Related(&band.Bookings[i].Type)
+	}
 	return c.JSON(http.StatusOK, band)
 }
 

@@ -20,18 +20,7 @@ type Band struct {
 	Genres       []Genre    `gorm:"many2many:band_genres;" json:"genres `
 	CategoryList *string    `json:"categores_list"`
 	GenreList    *string    `json:"genres_list"`
-}
-
-func GetGenreList(band Band) string {
-	genresList := ""
-	for i, genre := range band.Genres {
-
-		genresList += genre.Name
-		if i != len(band.Genres)-1 {
-			genresList += " , "
-		}
-	}
-	return genresList
+	Bookings     []Booking  `json:"bookings"`
 }
 
 type BandType struct {
@@ -46,4 +35,16 @@ type BandType struct {
 type BandGenre struct {
 	BandID  int `gorm:"primary_key:true" json:"band_id"`
 	GenreID int `gorm:"primary_key:true" json:"genre_id"`
+}
+
+func GetGenreList(band Band) string {
+	genresList := ""
+	for i, genre := range band.Genres {
+
+		genresList += genre.Name
+		if i != len(band.Genres)-1 {
+			genresList += " , "
+		}
+	}
+	return genresList
 }
