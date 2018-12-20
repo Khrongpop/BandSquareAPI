@@ -22,8 +22,8 @@ var err error
 func main() {
 
 	viper.AutomaticEnv()
-	port := ":" + viper.GetString("port")
-	// port := ":1323"
+	// port := ":" + viper.GetString("port")
+	port := ":1323"
 	datasource := viper.GetString("CLEARDB_DATABASE_URL")
 
 	mysqlUser := "b85b02f8218929"
@@ -103,16 +103,26 @@ func fblogin(c echo.Context) error {
 	var fb model.SocailAccount
 	var user model.User
 	providerID := c.FormValue("id")
-	if err := db.Where("provider_user_id = ?", providerID).First(fb).Error; gorm.IsRecordNotFoundError(err) {
-		user.Name = c.FormValue("name")
-		user.Email = c.FormValue("email")
-		user.Active = true
-		user.Password = hashAndSalt([]byte(strconv.Itoa(rand.Intn(100))))
-		// user.Password = hashAndSalt([]byte("sadsad"))
-		user.Image = "https://graph.facebook.com/" + providerID + "/picture?type=large&return_ssl_resources=1"
-		user.Thumbnail = "https://graph.facebook.com/" + providerID + "/picture"
-		user.RoleID = 1
-		db.Create(&user)
+
+	if err := db.Where("provider_id = ?", providerID).First(&fb).Error; gorm.IsRecordNotFoundError(err) {
+		name := c.FormValue("name")
+		email := c.FormValue("email")
+		if err := db.Where("email = ?", email).First(&user).Error; gorm.IsRecordNotFoundError(err) {
+			user.Name = name
+			user.Email = email
+			user.Active = true
+			user.Password = hashAndSalt([]byte(strconv.Itoa(rand.Intn(100))))
+			user.Image = "https://graph.facebook.com/" + providerID + "/picture?type=large&return_ssl_resources=1"
+			user.Thumbnail = "https://graph.facebook.com/" + providerID + "/picture"
+			user.RoleID = 1
+			db.Create(&user)
+			db.Model(&user).Related(&user.Role)
+			fb.UserID = user.ID
+			fb.ProviderID = providerID
+			fb.Provider = c.FormValue("provider")
+			db.Create(&fb)
+			return c.JSON(http.StatusOK, user)
+		}
 		db.Model(&user).Related(&user.Role)
 		fb.UserID = user.ID
 		fb.ProviderID = providerID
