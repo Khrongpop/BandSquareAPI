@@ -57,6 +57,18 @@ func GetGenreList(band Band) string {
 	return genresList
 }
 
+func GetCategoryList(band Band) string {
+	categoryList := ""
+	for i, category := range band.Categories {
+
+		categoryList += category.Name
+		if i != len(band.Categories)-1 {
+			categoryList += " , "
+		}
+	}
+	return categoryList
+}
+
 func GetRateAVG(reviews []Review) float32 {
 	rateAvg := float32(0)
 	reviewCount := len(reviews)

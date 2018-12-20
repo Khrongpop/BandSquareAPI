@@ -205,15 +205,13 @@ func bandDetail(c echo.Context) error {
 
 	}
 
-	categoriesList := ""
 	for i := range bandType {
 		db.Model(&bandType[i]).Related(&bandType[i].Type)
-		categoriesList += bandType[i].Type.Name
-		if i != len(bandType)-1 {
-			categoriesList += " , "
-		}
 	}
 	band.Types = bandType
+
+	db.Model(&band).Related(&band.Categories, "Categories")
+	categoriesList := model.GetCategoryList(band)
 	band.CategoryList = &categoriesList
 
 	db.Model(&band).Related(&band.Genres, "Genres")
