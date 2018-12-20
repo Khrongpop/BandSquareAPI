@@ -3,8 +3,6 @@ package migration
 import (
 	"fmt"
 
-	"github.com/khrongpop/BandSquareAPI/migration/seeder"
-
 	"github.com/jinzhu/gorm"
 	"github.com/khrongpop/BandSquareAPI/model"
 )
@@ -31,7 +29,7 @@ func dataSeed(db *gorm.DB) {
 	// seeder.TypeSeed(db)
 	// seeder.UserSeed(db)
 	// seeder.BandSeed(db)
-	seeder.BandCategorySeed(db)
+	// seeder.BandCategorySeed(db)
 	// seeder.BandTypeSeed(db)
 	// seeder.BandGenreSeed(db)
 	// seeder.BookingSeed(db)
@@ -62,6 +60,6 @@ func RefreshDB(db *gorm.DB) {
 	fmt.Println("migrate table ...")
 	db.AutoMigrate(&model.User{}, &model.SocailAccount{}, &model.Band{}, &model.BandType{}, &model.Booking{}, &model.Review{})
 	fmt.Println("seed table ...")
-	dataSeed(db)
+	// dataSeed(db)
 	fmt.Println("migrate complete !!!")
 }

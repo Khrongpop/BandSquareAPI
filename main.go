@@ -151,72 +151,80 @@ func fblogin(c echo.Context) error {
 func bandRecommend(c echo.Context) error {
 	var bands []model.Band
 	db.Table("bands").Select("* ,AVG(reviews.rate) as avg").Joins("JOIN reviews ON reviews.band_id = bands.id ").Group("bands.user_id").Order("avg desc").Scan(&bands)
-	for i, _ := range bands {
-		db.Model(&bands[i]).Related(&bands[i].Reviews)
-		rateAvg := model.GetRateAVG(bands[i].Reviews)
-		bands[i].RateAvg = &rateAvg
+	for i := range bands {
+		bands[i] = getBandTitle(bands[i])
 	}
 
 	return c.JSON(http.StatusOK, bands)
 }
 
-func getBandDeatil(band model.Band) {
-
-}
-
 func bandOnline(c echo.Context) error {
 	var bands []model.Band
 	db.Joins("JOIN users ON bands.user_id = users.id AND users.active = ?", 1).Find(&bands)
-	for i, band := range bands {
-		var user model.User
-		db.Model(&user).Related(&user.Role)
-		db.First(&user, band.UserID)
-		bands[i].User = &user
+	for i := range bands {
+		bands[i] = getBandTitle(bands[i])
 	}
 	return c.JSON(http.StatusOK, bands)
 }
 
 func bandNew(c echo.Context) error {
 	var bands []model.Band
+	db.Table("bands").Select("* ").Joins("left join bookings ON bookings.band_id = bands.id ").Where("bookings.id IS NULL").Group("bands.user_id").Scan(&bands)
+	for i := range bands {
+		bands[i] = getBandTitle(bands[i])
+	}
 	return c.JSON(http.StatusOK, bands)
 }
 
 func bandCheap(c echo.Context) error {
 	var bands []model.Band
 	db.Find(&bands, "max_price < ?", 15000)
-	for i, band := range bands {
-		var user model.User
-		db.First(&user, band.UserID)
-		db.Model(&user).Related(&user.Role)
-		bands[i].User = &user
+	for i := range bands {
+		bands[i] = getBandTitle(bands[i])
 	}
 	return c.JSON(http.StatusOK, bands)
 }
 
 func bandDetail(c echo.Context) error {
 	var band model.Band
-	var user model.User
-	var bandType []model.BandType
-
 	db.First(&band, c.Param("id"))
+
+	band = getBandTitle(band)
+	band = getBandDetail(band)
+
+	return c.JSON(http.StatusOK, band)
+}
+
+func getBandTitle(band model.Band) model.Band {
+	var user model.User
 	db.First(&user, band.UserID)
+	db.Model(&user).Related(&user.Role)
 	band.User = &user
+
+	db.Model(&band).Related(&band.Reviews)
+	rateAvg := model.GetRateAVG(band.Reviews)
+	band.RateAvg = &rateAvg
+
+	db.Model(&band).Related(&band.Categories, "categories")
+	categoriesList := model.GetCategoryList(band)
+	band.CategoryList = &categoriesList
+
+	db.Model(&band).Related(&band.Genres, "genres")
+	genresList := model.GetGenreList(band)
+	band.GenreList = &genresList
+
+	return band
+}
+
+func getBandDetail(band model.Band) model.Band {
+	var bandType []model.BandType
 	if err := db.Find(&bandType, "band_id = ?", band.ID).Error; gorm.IsRecordNotFoundError(err) {
 
 	}
-
 	for i := range bandType {
 		db.Model(&bandType[i]).Related(&bandType[i].Type)
 	}
 	band.Types = bandType
-
-	db.Model(&band).Related(&band.Categories, "Categories")
-	categoriesList := model.GetCategoryList(band)
-	band.CategoryList = &categoriesList
-
-	db.Model(&band).Related(&band.Genres, "Genres")
-	genresList := model.GetGenreList(band)
-	band.GenreList = &genresList
 
 	db.Model(&band).Related(&band.Bookings)
 	for i := range band.Bookings {
@@ -224,11 +232,7 @@ func bandDetail(c echo.Context) error {
 		db.Model(&band.Bookings[i]).Related(&band.Bookings[i].Category)
 		db.Model(&band.Bookings[i]).Related(&band.Bookings[i].Type)
 	}
-
-	db.Model(&band).Related(&band.Reviews)
-	rateAvg := model.GetRateAVG(band.Reviews)
-	band.RateAvg = &rateAvg
-	return c.JSON(http.StatusOK, band)
+	return band
 }
 
 func create(c echo.Context) error {
