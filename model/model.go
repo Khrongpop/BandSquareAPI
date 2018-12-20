@@ -18,8 +18,8 @@ type User struct {
 	Password  string    `json:"password"`
 	Image     string    `json:"image"`
 	Thumbnail string    `json:"thumbnail"`
-	Active    bool      `json:"active"`
-	RoleID    int8      `json:"role_id"`
+	Active    bool      `gorm:"default:0" json:"active"`
+	RoleID    int8      `gorm:"default:1" json:"role_id"`
 	Role      Role      `json:"role"`
 	Band      *Band     `json:"band"`
 	CreatedAt time.Time `json:"created_at"`
