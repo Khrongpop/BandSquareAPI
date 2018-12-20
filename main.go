@@ -62,6 +62,7 @@ func main() {
 	bands.GET("/onlines", bandOnline)
 	bands.POST("/news", bandOnline)
 	bands.GET("/cheaps", bandCheap)
+	bands.GET("/detail/:id", bandDetail)
 
 	e.GET("/db/refesh", refreshDB)
 
@@ -165,6 +166,35 @@ func bandCheap(c echo.Context) error {
 	return c.JSON(http.StatusOK, bands)
 }
 
+func bandDetail(c echo.Context) error {
+	var bands []model.Band
+	db.Joins("JOIN users ON bands.user_id = users.id AND bands.max_price < ?", 25000).Find(&bands)
+	var band model.Band
+	var user model.User
+	var bandType []model.BandType
+
+	db.First(&band, c.Param("id"))
+	db.First(&user, band.UserID)
+	band.User = &user
+	if err := db.Where("band_id = ?", band.ID).Find(&bandType).Error; gorm.IsRecordNotFoundError(err) {
+
+	}
+	categoriesList := ""
+
+	for i := range bandType {
+		db.Model(&bandType[i]).Related(&bandType[i].Type)
+		categoriesList += bandType[i].Type.Name
+		if i != len(bandType)-1 {
+			categoriesList += " , "
+		}
+	}
+
+	band.Types = bandType
+	band.CategoryList = &categoriesList
+
+	return c.JSON(http.StatusOK, band)
+}
+
 func create(c echo.Context) error {
 	var user model.User
 	if err := c.Bind(&user); err != nil {
@@ -178,7 +208,7 @@ func create(c echo.Context) error {
 func list(c echo.Context) error {
 	users := []model.User{}
 	db.Find(&users)
-	for i, _ := range users {
+	for i := range users {
 		db.Model(&users[i]).Related(&users[i].Role)
 		// db.Model(&users[i]).Related(&users[i].Band)
 		// users[i].Band = band
