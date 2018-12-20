@@ -22,8 +22,8 @@ var err error
 func main() {
 
 	viper.AutomaticEnv()
-	// port := ":" + viper.GetString("port")
-	port := ":1323"
+	port := ":" + viper.GetString("port")
+	// port := ":1323"
 	datasource := viper.GetString("CLEARDB_DATABASE_URL")
 
 	mysqlUser := "b85b02f8218929"
@@ -56,8 +56,12 @@ func main() {
 	e.PUT("/users/:id", update)
 	e.DELETE("/users/:id", delete)
 
-	bands := e.Group("/bands")
+	bands := e.Group("/band")
 	bands.GET("/bands", bandslist)
+	bands.POST("/recommend", bandslist)
+	bands.GET("/onlines", bandOnline)
+	bands.POST("/news", bandOnline)
+	bands.GET("/cheaps", bandCheap)
 
 	e.GET("/db/refesh", refreshDB)
 
@@ -135,6 +139,30 @@ func fblogin(c echo.Context) error {
 	}
 	db.Model(&user).Related(&user.Role)
 	return c.JSON(http.StatusOK, user)
+}
+
+func bandOnline(c echo.Context) error {
+	var bands []model.Band
+	db.Joins("JOIN users ON bands.user_id = users.id AND users.active = ?", 1).Find(&bands)
+	for i, band := range bands {
+		var user model.User
+		db.Model(&user).Related(&user.Role)
+		db.First(&user, band.UserID)
+		bands[i].User = &user
+	}
+	return c.JSON(http.StatusOK, bands)
+}
+
+func bandCheap(c echo.Context) error {
+	var bands []model.Band
+	db.Joins("JOIN users ON bands.user_id = users.id AND bands.max_price < ?", 25000).Find(&bands)
+	for i, band := range bands {
+		var user model.User
+		db.First(&user, band.UserID)
+		db.Model(&user).Related(&user.Role)
+		bands[i].User = &user
+	}
+	return c.JSON(http.StatusOK, bands)
 }
 
 func create(c echo.Context) error {

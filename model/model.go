@@ -12,16 +12,16 @@ type Role struct {
 
 type User struct {
 	// gorm.Model
-	ID        uint   `gorm:"primary_key" json:"id"`
-	Name      string `json:"name"`
-	Email     string `json:"email"`
-	Password  string `json:"password"`
-	Image     string `json:"image"`
-	Thumbnail string `json:"thumbnail"`
-	Active    bool   `json:"active"`
-	RoleID    int8   `json:"role_id"`
-	Role      Role   `json:"role"`
-	// Band      Band      `json:"band"`
+	ID        uint      `gorm:"primary_key" json:"id"`
+	Name      string    `json:"name"`
+	Email     string    `json:"email"`
+	Password  string    `json:"password"`
+	Image     string    `json:"image"`
+	Thumbnail string    `json:"thumbnail"`
+	Active    bool      `json:"active"`
+	RoleID    int8      `json:"role_id"`
+	Role      Role      `json:"role"`
+	Band      *Band     `json:"band"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
