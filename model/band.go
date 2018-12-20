@@ -17,7 +17,7 @@ type Band struct {
 	CreatedAt    time.Time  `json:"created_at"`
 	User         *User      `json:"user"`
 	Types        []BandType `json:"types"`
-	Genres       []Genre    `gorm:"many2many:band_genres;" json:"genres`
+	Genres       []Genre    `gorm:"many2many:band_genres;" json:"genres `
 	CategoryList *string    `json:"categores_list"`
 	GenreList    *string    `json:"genres_list"`
 }
