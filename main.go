@@ -59,22 +59,19 @@ func main() {
 	auth.POST("/login", login)
 	auth.POST("/register", register)
 	auth.POST("/fblogin", fblogin)
-
-	e.POST("/create", create)
-	e.GET("/users", list)
-	e.GET("/users/:id", view)
-	e.PUT("/users/:id", update)
-	e.DELETE("/users/:id", delete)
+	auth.POST("/enable", enableUser)
+	auth.POST("/disable", disableUser)
 
 	bands := e.Group("/band")
 	bands.GET("/bands", bandslist)
 	bands.GET("/recommend", bandRecommend)
+	bands.GET("/detail/:id", testbandDetail)
 	bands.POST("/recommend", bandRecommend)
 	bands.POST("/onlines", bandOnline)
 	bands.POST("/news", bandNew)
 	bands.POST("/cheaps", bandCheap)
 	bands.POST("/detail", bandDetail)
-	bands.GET("/detail/:id", testbandDetail)
+	bands.POST("/favourite", favourite)
 
 	e.GET("/db/refesh", refreshDB)
 
@@ -94,10 +91,10 @@ func login(c echo.Context) error {
 		db.Model(&user).Related(&user.Role)
 		var favourites []model.Band
 		db.Joins("JOIN favourites ON favourites.band_id = bands.id AND favourites.user_id = ?", user.ID).Find(&favourites)
-		for _, band := range favourites {
+		for i, band := range favourites {
 			var userBand model.User
 			db.First(&userBand, band.UserID)
-			band.User = &userBand
+			favourites[i].User = &userBand
 		}
 		user.Favourites = favourites
 
@@ -160,6 +157,61 @@ func fblogin(c echo.Context) error {
 		log.Fatal(err)
 	}
 	db.Model(&user).Related(&user.Role)
+	return c.JSON(http.StatusOK, user)
+}
+
+func enableUser(c echo.Context) error {
+	var user model.User
+	db.First(&user, c.FormValue("id"))
+	db.Model(&user).Update("active", true)
+	return c.JSON(http.StatusOK, `enable_user_sucsees`)
+}
+
+func disableUser(c echo.Context) error {
+	var user model.User
+	db.First(&user, c.FormValue("id"))
+	db.Model(&user).Update("active", false)
+	return c.JSON(http.StatusOK, `disable_user_sucsees`)
+}
+
+func favourite(c echo.Context) error {
+	var user model.User
+	var favourite model.Favourite
+	userID := c.FormValue("user_id")
+	bandID := c.FormValue("band_id")
+	UserID, err := strconv.ParseUint(userID, 10, 32)
+	if err != nil {
+		fmt.Println(err)
+	}
+	BandID, err := strconv.ParseUint(bandID, 10, 32)
+	if err := db.First(&favourite, `user_id = ? AND band_id = ?`, userID, bandID).Error; gorm.IsRecordNotFoundError(err) {
+		db.Create(&model.Favourite{
+			UserID: uint(UserID),
+			BandID: uint(BandID),
+		})
+		db.First(&user, userID)
+		db.Model(&user).Related(&user.Role)
+		var favourites []model.Band
+		db.Joins("JOIN favourites ON favourites.band_id = bands.id AND favourites.user_id = ?", user.ID).Find(&favourites)
+		for i, band := range favourites {
+			var userBand model.User
+			db.First(&userBand, band.UserID)
+			favourites[i].User = &userBand
+		}
+		user.Favourites = favourites
+		return c.JSON(http.StatusOK, user)
+	}
+	db.Delete(&favourite)
+	db.First(&user, userID)
+	db.Model(&user).Related(&user.Role)
+	var favourites []model.Band
+	db.Joins("JOIN favourites ON favourites.band_id = bands.id AND favourites.user_id = ?", user.ID).Find(&favourites)
+	for i, band := range favourites {
+		var userBand model.User
+		db.First(&userBand, band.UserID)
+		favourites[i].User = &userBand
+	}
+	user.Favourites = favourites
 	return c.JSON(http.StatusOK, user)
 }
 
