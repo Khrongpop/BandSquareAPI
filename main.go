@@ -92,6 +92,15 @@ func login(c echo.Context) error {
 	check := comparePasswords(user.Password, []byte(password))
 	if check {
 		db.Model(&user).Related(&user.Role)
+		var favourites []model.Band
+		db.Joins("JOIN favourites ON favourites.band_id = bands.id AND favourites.user_id = ?", user.ID).Find(&favourites)
+		for _, band := range favourites {
+			var userBand model.User
+			db.First(&userBand, band.UserID)
+			band.User = &userBand
+		}
+		user.Favourites = favourites
+
 		return c.JSON(http.StatusOK, user)
 	} else {
 		return c.JSON(http.StatusOK, "invalid password")
