@@ -260,11 +260,16 @@ func getBandDetail(band model.Band) model.Band {
 		db.Model(&band.Bookings[i]).Related(&band.Bookings[i].Type)
 	}
 
-	for i := range band.Reviews {
-		db.Model(&band.Reviews[i]).Related(&band.Reviews[i].User)
-		db.Model(&band.Reviews[i]).Related(&band.Reviews[i].Booking)
-		db.Model(&band.Reviews[i].Booking).Related(&band.Reviews[i].Booking.Category)
-		db.Model(&band.Reviews[i].Booking).Related(&band.Reviews[i].Booking.Type)
+	for i, review := range band.Reviews {
+		var user model.User
+		var booking model.Booking
+		db.Find(&user, review.UserID)
+		db.Find(&booking, review.BookingID)
+		db.Model(&booking).Related(&booking.Category)
+		db.Model(&booking).Related(&booking.Type)
+		band.Reviews[i].User = &user
+		band.Reviews[i].Booking = &booking
+
 	}
 	return band
 }

@@ -10,6 +10,6 @@ type Review struct {
 	Rate      float32   `json:"rate"`
 	Detail    string    `json:"detail"`
 	CreatedAt time.Time `json:"created_at"`
-	User      User      `json:"user"`
-	Booking   Booking   `json:"booking"`
+	User      *User     `json:"user"`
+	Booking   *Booking  `json:"booking"`
 }
