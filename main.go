@@ -26,19 +26,23 @@ func main() {
 	// t, _ := time.Parse(layout, input)
 	// fmt.Println(t)                       // 2017-08-31 00:00:00 +0000 UTC
 	// fmt.Println(t.Format("02-Jan-2006")) // 31-Aug-2017
-
 	viper.AutomaticEnv()
 	port := ":" + viper.GetString("port")
 	// port := ":1323"
 	datasource := viper.GetString("CLEARDB_DATABASE_URL")
 
-	mysqlUser := "b85b02f8218929"
-	mysqlPass := "1642c1e7"
-	mysqlHost := "us-cdbr-iron-east-01.cleardb.net"
-	mysqlName := "heroku_a5a40c45511bb84"
-	mysqlConfig := "?parseTime=true"
+	// mysqlUser := "b85b02f8218929"
+	// mysqlPass := "1642c1e7"
+	// mysqlHost := "us-cdbr-iron-east-01.cleardb.net"
+	// mysqlName := "heroku_a5a40c45511bb84"
 
-	databaseURL := fmt.Sprintf("%v:%v@tcp(%v)/%v%v", mysqlUser, mysqlPass, mysqlHost, mysqlName, mysqlConfig)
+	mysqlUser := viper.GetString("MYSQLUSER")
+	mysqlPass := viper.GetString("MYSQLPASS")
+	mysqlHost := viper.GetString("MYSQLHOST")
+	mysqlName := viper.GetString("MYSQLName")
+	mysqlConfig := "charset=utf8&parseTime=true"
+
+	databaseURL := fmt.Sprintf("%v:%v@tcp(%v)/%v?%v", mysqlUser, mysqlPass, mysqlHost, mysqlName, mysqlConfig)
 	db, err = gorm.Open("mysql", databaseURL)
 	if err != nil {
 		panic("failed to connect database")
@@ -65,9 +69,10 @@ func main() {
 	bands := e.Group("/band")
 	bands.GET("/bands", bandslist)
 	bands.GET("/recommend", bandRecommend)
-	bands.GET("/onlines", bandOnline)
-	bands.GET("/news", bandNew)
-	bands.GET("/cheaps", bandCheap)
+	bands.POST("/recommend", bandRecommend)
+	bands.POST("/onlines", bandOnline)
+	bands.POST("/news", bandNew)
+	bands.POST("/cheaps", bandCheap)
 	bands.GET("/detail/:id", bandDetail)
 
 	e.GET("/db/refesh", refreshDB)
