@@ -223,6 +223,12 @@ func getBandDetail(band model.Band) model.Band {
 	}
 	for i := range bandType {
 		db.Model(&bandType[i]).Related(&bandType[i].Type)
+		var images []model.BandImage
+		var videos []model.BandVideo
+		db.Find(&images, `bandtype_id = ?`, bandType[i].ID)
+		db.Find(&videos, `bandtype_id = ?`, bandType[i].ID)
+		bandType[i].Images = images
+		bandType[i].Videos = videos
 	}
 	band.Types = bandType
 

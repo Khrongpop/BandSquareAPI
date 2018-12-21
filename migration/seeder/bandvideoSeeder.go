@@ -7,7 +7,7 @@ import (
 	"github.com/khrongpop/BandSquareAPI/model"
 )
 
-func BandVideoSeed(*gorm.DB) {
+func BandVideoSeed(db *gorm.DB) {
 	fmt.Println("seed BandVideo ...")
 	db.Create(&model.BandVideo{
 		BandtypeID: 1,

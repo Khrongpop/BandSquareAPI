@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/jinzhu/gorm"
+	"github.com/khrongpop/BandSquareAPI/migration/seeder"
 	"github.com/khrongpop/BandSquareAPI/model"
 )
 
@@ -30,36 +31,47 @@ func dataSeed(db *gorm.DB) {
 	// seeder.UserSeed(db)
 	// seeder.BandSeed(db)
 	// seeder.BandCategorySeed(db)
-	// seeder.BandTypeSeed(db)
+	seeder.BandTypeSeed(db)
+	seeder.BandImageSeed(db)
+	seeder.BandVideoSeed(db)
 	// seeder.BandGenreSeed(db)
 	// seeder.BookingSeed(db)
 	// seeder.ReviewSeed(db)
-	db.Model(&model.User{}).AddForeignKey("role_id", "roles(id)", "cascade", "RESTRICT")
-	db.Model(&model.SocailAccount{}).AddForeignKey("user_id", "users(id)", "cascade", "RESTRICT")
-	db.Model(&model.Band{}).AddForeignKey("user_id", "users(id)", "cascade", "RESTRICT")
-	db.Model(&model.BandCategory{}).AddForeignKey("band_id", "bands(id)", "cascade", "RESTRICT")
-	db.Model(&model.BandCategory{}).AddForeignKey("category_id", "categories(id)", "cascade", "RESTRICT")
+
+	addForeignKey(db)
+}
+
+func addForeignKey(db *gorm.DB) {
+	// db.Model(&model.User{}).AddForeignKey("role_id", "roles(id)", "cascade", "RESTRICT")
+	// db.Model(&model.SocailAccount{}).AddForeignKey("user_id", "users(id)", "cascade", "RESTRICT")
+	// db.Model(&model.Band{}).AddForeignKey("user_id", "users(id)", "cascade", "RESTRICT")
+	// db.Model(&model.BandCategory{}).AddForeignKey("band_id", "bands(id)", "cascade", "RESTRICT")
+	// db.Model(&model.BandCategory{}).AddForeignKey("category_id", "categories(id)", "cascade", "RESTRICT")
 	db.Model(&model.BandType{}).AddForeignKey("band_id", "bands(id)", "cascade", "RESTRICT")
 	db.Model(&model.BandType{}).AddForeignKey("type_id", "types(id)", "cascade", "RESTRICT")
-	db.Model(&model.BandGenre{}).AddForeignKey("band_id", "bands(id)", "cascade", "RESTRICT")
-	db.Model(&model.BandGenre{}).AddForeignKey("genre_id", "genres(id)", "cascade", "RESTRICT")
-	db.Model(&model.Booking{}).AddForeignKey("user_id", "users(id)", "cascade", "RESTRICT")
-	db.Model(&model.Booking{}).AddForeignKey("band_id", "bands(id)", "cascade", "RESTRICT")
-	db.Model(&model.Booking{}).AddForeignKey("category_id", "categories(id)", "cascade", "RESTRICT")
-	db.Model(&model.Booking{}).AddForeignKey("type_id", "types(id)", "cascade", "RESTRICT")
-	db.Model(&model.Review{}).AddForeignKey("user_id", "users(id)", "cascade", "RESTRICT")
-	db.Model(&model.Review{}).AddForeignKey("band_id", "bands(id)", "cascade", "RESTRICT")
-	db.Model(&model.Review{}).AddForeignKey("booking_id", "bookings(id)", "cascade", "RESTRICT")
+	db.Model(&model.BandImage{}).AddForeignKey("bandtype_id", "band_types(id)", "cascade", "RESTRICT")
+	db.Model(&model.BandVideo{}).AddForeignKey("bandtype_id", "band_types(id)", "cascade", "RESTRICT")
+	// db.Model(&model.BandGenre{}).AddForeignKey("band_id", "bands(id)", "cascade", "RESTRICT")
+	// db.Model(&model.BandGenre{}).AddForeignKey("genre_id", "genres(id)", "cascade", "RESTRICT")
+	// db.Model(&model.Booking{}).AddForeignKey("user_id", "users(id)", "cascade", "RESTRICT")
+	// db.Model(&model.Booking{}).AddForeignKey("band_id", "bands(id)", "cascade", "RESTRICT")
+	// db.Model(&model.Booking{}).AddForeignKey("category_id", "categories(id)", "cascade", "RESTRICT")
+	// db.Model(&model.Booking{}).AddForeignKey("type_id", "types(id)", "cascade", "RESTRICT")
+	// db.Model(&model.Review{}).AddForeignKey("user_id", "users(id)", "cascade", "RESTRICT")
+	// db.Model(&model.Review{}).AddForeignKey("band_id", "bands(id)", "cascade", "RESTRICT")
+	// db.Model(&model.Review{}).AddForeignKey("booking_id", "bookings(id)", "cascade", "RESTRICT")
+
 }
 
 func RefreshDB(db *gorm.DB) {
 	fmt.Println("drop table ...")
 	// db.DropTable(&model.BandType{}, &model.Band{}, &model.User{}, &model.Category{}, &model.Genre{}, &model.Type{}, &model.Role{})
 	// db.DropTable(&model.BandType{}, &model.Band{}, &model.User{})
+	db.DropTable(&model.BandType{}, &model.BandImage{}, &model.BandVideo{})
 	// db.DropTable(&model.Booking{}, &model.Review{})
 	fmt.Println("migrate table ...")
-	db.AutoMigrate(&model.User{}, &model.SocailAccount{}, &model.Band{}, &model.BandType{}, &model.Booking{}, &model.Review{})
+	db.AutoMigrate(&model.User{}, &model.SocailAccount{}, &model.Band{}, &model.BandType{}, &model.Booking{}, &model.Review{}, &model.BandImage{}, &model.BandVideo{})
 	fmt.Println("seed table ...")
-	// dataSeed(db)
+	dataSeed(db)
 	fmt.Println("migrate complete !!!")
 }

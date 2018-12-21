@@ -27,12 +27,14 @@ type Band struct {
 }
 
 type BandType struct {
-	ID     uint   `gorm:"primary_key" json:"id"`
-	BandID int    `json:"band_id"`
-	TypeID int    `json:"type_id"`
-	Detail string `json:"detail"`
-	Band   *Band  `json:"band"`
-	Type   Type   `json:"type"`
+	ID     uint        `gorm:"primary_key" json:"id"`
+	BandID int         `json:"band_id"`
+	TypeID int         `json:"type_id"`
+	Detail string      `json:"detail"`
+	Band   *Band       `json:"band"`
+	Type   Type        `json:"type"`
+	Images []BandImage `gorm:"foreignkey:BandtypeID" json:"images"`
+	Videos []BandVideo `gorm:"foreignkey:BandtypeID" json:"videos"`
 }
 
 type BandGenre struct {

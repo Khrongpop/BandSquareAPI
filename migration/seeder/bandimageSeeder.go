@@ -7,7 +7,7 @@ import (
 	"github.com/khrongpop/BandSquareAPI/model"
 )
 
-func BandImageSeed(*gorm.DB) {
+func BandImageSeed(db *gorm.DB) {
 	fmt.Println("seed BandImage ...")
 	db.Create(&model.BandImage{
 		BandtypeID: 1,
