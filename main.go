@@ -31,15 +31,15 @@ func main() {
 	// port := ":1323"
 	datasource := viper.GetString("CLEARDB_DATABASE_URL")
 
-	// mysqlUser := "b85b02f8218929"
-	// mysqlPass := "1642c1e7"
-	// mysqlHost := "us-cdbr-iron-east-01.cleardb.net"
-	// mysqlName := "heroku_a5a40c45511bb84"
+	mysqlUser := "b85b02f8218929"
+	mysqlPass := "1642c1e7"
+	mysqlHost := "us-cdbr-iron-east-01.cleardb.net"
+	mysqlName := "heroku_a5a40c45511bb84"
 
-	mysqlUser := viper.GetString("MYSQLUSER")
-	mysqlPass := viper.GetString("MYSQLPASS")
-	mysqlHost := viper.GetString("MYSQLHOST")
-	mysqlName := viper.GetString("MYSQLName")
+	// mysqlUser := viper.GetString("MYSQLUSER")
+	// mysqlPass := viper.GetString("MYSQLPASS")
+	// mysqlHost := viper.GetString("MYSQLHOST")
+	// mysqlName := viper.GetString("MYSQLName")
 	mysqlConfig := "charset=utf8&parseTime=true"
 
 	databaseURL := fmt.Sprintf("%v:%v@tcp(%v)/%v?%v", mysqlUser, mysqlPass, mysqlHost, mysqlName, mysqlConfig)
@@ -73,7 +73,8 @@ func main() {
 	bands.POST("/onlines", bandOnline)
 	bands.POST("/news", bandNew)
 	bands.POST("/cheaps", bandCheap)
-	bands.GET("/detail/:id", bandDetail)
+	bands.POST("/detail", bandDetail)
+	bands.GET("/detail/:id", testbandDetail)
 
 	e.GET("/db/refesh", refreshDB)
 
@@ -158,6 +159,7 @@ func bandRecommend(c echo.Context) error {
 	db.Table("bands").Select("* ,AVG(reviews.rate) as avg").Joins("JOIN reviews ON reviews.band_id = bands.id ").Group("bands.user_id").Order("avg desc").Scan(&bands)
 	for i := range bands {
 		bands[i] = getBandTitle(bands[i])
+		// bands[i] = getBandDetail(bands[i])
 	}
 
 	return c.JSON(http.StatusOK, bands)
@@ -168,6 +170,7 @@ func bandOnline(c echo.Context) error {
 	db.Joins("JOIN users ON bands.user_id = users.id AND users.active = ?", 1).Find(&bands)
 	for i := range bands {
 		bands[i] = getBandTitle(bands[i])
+		// bands[i] = getBandDetail(bands[i])
 	}
 	return c.JSON(http.StatusOK, bands)
 }
@@ -177,6 +180,7 @@ func bandNew(c echo.Context) error {
 	db.Table("bands").Select("* ").Joins("left join bookings ON bookings.band_id = bands.id ").Where("bookings.id IS NULL").Group("bands.user_id").Scan(&bands)
 	for i := range bands {
 		bands[i] = getBandTitle(bands[i])
+		// bands[i] = getBandDetail(bands[i])
 	}
 	return c.JSON(http.StatusOK, bands)
 }
@@ -186,11 +190,23 @@ func bandCheap(c echo.Context) error {
 	db.Find(&bands, "max_price < ?", 15000)
 	for i := range bands {
 		bands[i] = getBandTitle(bands[i])
+		// bands[i] = getBandDetail(bands[i])
 	}
 	return c.JSON(http.StatusOK, bands)
 }
 
 func bandDetail(c echo.Context) error {
+	var band model.Band
+	// db.First(&band, c.Param("id"))
+	db.First(&band, c.FormValue("band_id"))
+
+	band = getBandTitle(band)
+	band = getBandDetail(band)
+
+	return c.JSON(http.StatusOK, band)
+}
+
+func testbandDetail(c echo.Context) error {
 	var band model.Band
 	db.First(&band, c.Param("id"))
 
@@ -242,6 +258,13 @@ func getBandDetail(band model.Band) model.Band {
 		db.Model(&band.Bookings[i]).Related(&band.Bookings[i].User)
 		db.Model(&band.Bookings[i]).Related(&band.Bookings[i].Category)
 		db.Model(&band.Bookings[i]).Related(&band.Bookings[i].Type)
+	}
+
+	for i := range band.Reviews {
+		db.Model(&band.Reviews[i]).Related(&band.Reviews[i].User)
+		db.Model(&band.Reviews[i]).Related(&band.Reviews[i].Booking)
+		db.Model(&band.Reviews[i].Booking).Related(&band.Reviews[i].Booking.Category)
+		db.Model(&band.Reviews[i].Booking).Related(&band.Reviews[i].Booking.Type)
 	}
 	return band
 }
