@@ -72,6 +72,7 @@ func main() {
 	bands.POST("/cheaps", bandCheap)
 	bands.POST("/detail", bandDetail)
 	bands.POST("/favourite", favourite)
+	bands.POST("/favourite_check", checkFavourite)
 
 	e.GET("/db/refesh", refreshDB)
 
@@ -213,6 +214,17 @@ func favourite(c echo.Context) error {
 	}
 	user.Favourites = favourites
 	return c.JSON(http.StatusOK, user)
+}
+
+func checkFavourite(c echo.Context) error {
+	var favourite model.Favourite
+	var response model.FavouriteCheck
+	if err = db.First(&favourite, `user_id = ? AND band_id = ?`, c.FormValue("user_id"), c.FormValue("band_id")).Error; gorm.IsRecordNotFoundError(err) {
+		response.Status = false
+		return c.JSON(http.StatusOK, response)
+	}
+	response.Status = true
+	return c.JSON(http.StatusOK, response)
 }
 
 func bandRecommend(c echo.Context) error {
@@ -431,4 +443,8 @@ func comparePasswords(hashedPwd string, plainPwd []byte) bool {
 	}
 
 	return true
+}
+
+type Response struct {
+	Message string `json="message"`
 }

@@ -30,10 +30,6 @@ type User struct {
 type Favourite struct {
 	UserID uint `gorm:"primary_key" json:"user_id"`
 	BandID uint `gorm:"primary_key" json:"band_id"`
-	// UserID uint `gorm:"primary_key:true"  json:"user_id"`
-	// BandID uint `gorm:"primary_key:true"  json:"band_id"`
-	// User   User `json:"user"`
-	// Band   Band `json:"user"`
 }
 type SocailAccount struct {
 	ID         uint   `gorm:"primary_key" json:"id"`
@@ -41,4 +37,8 @@ type SocailAccount struct {
 	ProviderID string `json:"provider_id"`
 	Provider   string `json:"provider"`
 	// 	// 2343960062310644
+}
+
+type FavouriteCheck struct {
+	Status bool `json="status"`
 }
