@@ -74,10 +74,10 @@ func main() {
 	bands.POST("/favourite", favourite)
 	bands.POST("/favourite_check", checkFavourite)
 
-	bands.GET("/detail_1/:id", testbandDetail1)
-	bands.GET("/detail_2/:id", testbandDetail2)
-	bands.GET("/detail_3/:id", testbandDetail3)
-	bands.GET("/detail_4/:id", testbandDetail4)
+	bands.GET("/info/:id", testbandbandInfo)
+	bands.GET("/types/:id", testbandTypes)
+	bands.GET("/bookings/:id", testbandbandBookings)
+	bands.GET("/reviews/:id", testbandReviews)
 
 	e.GET("/db/refesh", refreshDB)
 
@@ -266,7 +266,7 @@ func bandDetail(c echo.Context) error {
 	return c.JSON(http.StatusOK, band)
 }
 
-func testbandDetail1(c echo.Context) error {
+func bandInfo(c echo.Context) error {
 	var band model.Band
 	db.First(&band, c.Param("id"))
 
@@ -276,7 +276,7 @@ func testbandDetail1(c echo.Context) error {
 	return c.JSON(http.StatusOK, band)
 }
 
-func testbandDetail2(c echo.Context) error {
+func bandTypes(c echo.Context) error {
 	var bandType []model.BandType
 	if err := db.Find(&bandType, "band_id = ?", c.Param("id")).Error; gorm.IsRecordNotFoundError(err) {
 
@@ -293,7 +293,7 @@ func testbandDetail2(c echo.Context) error {
 	return c.JSON(http.StatusOK, bandType)
 }
 
-func testbandDetail3(c echo.Context) error {
+func bandBookings(c echo.Context) error {
 	var bookings []model.Booking
 	if err := db.Find(&bookings, "band_id = ?", c.Param("id")).Error; gorm.IsRecordNotFoundError(err) {
 
@@ -305,7 +305,7 @@ func testbandDetail3(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, bookings)
 }
-func testbandDetail4(c echo.Context) error {
+func bandReviews(c echo.Context) error {
 	var reviews []model.Review
 	if err := db.Find(&reviews, "band_id = ?", c.Param("id")).Error; gorm.IsRecordNotFoundError(err) {
 
@@ -331,6 +331,63 @@ func testbandDetail(c echo.Context) error {
 	band = getBandDetail(band)
 
 	return c.JSON(http.StatusOK, band)
+}
+
+func testbandbandInfo(c echo.Context) error {
+	var band model.Band
+	db.First(&band, c.Param("id"))
+
+	band = getBandTitle(band)
+	// band = getBandDetail(band)
+
+	return c.JSON(http.StatusOK, band)
+}
+
+func testbandTypes(c echo.Context) error {
+	var bandType []model.BandType
+	if err := db.Find(&bandType, "band_id = ?", c.Param("id")).Error; gorm.IsRecordNotFoundError(err) {
+
+	}
+	for i := range bandType {
+		db.Model(&bandType[i]).Related(&bandType[i].Type)
+		var images []model.BandImage
+		var videos []model.BandVideo
+		db.Find(&images, `bandtype_id = ?`, bandType[i].ID)
+		db.Find(&videos, `bandtype_id = ?`, bandType[i].ID)
+		bandType[i].Images = images
+		bandType[i].Videos = videos
+	}
+	return c.JSON(http.StatusOK, bandType)
+}
+
+func testbandbandBookings(c echo.Context) error {
+	var bookings []model.Booking
+	if err := db.Find(&bookings, "band_id = ?", c.Param("id")).Error; gorm.IsRecordNotFoundError(err) {
+
+	}
+	for i := range bookings {
+		db.Model(&bookings[i]).Related(&bookings[i].User)
+		db.Model(&bookings[i]).Related(&bookings[i].Category)
+		db.Model(&bookings[i]).Related(&bookings[i].Type)
+	}
+	return c.JSON(http.StatusOK, bookings)
+}
+func testbandReviews(c echo.Context) error {
+	var reviews []model.Review
+	if err := db.Find(&reviews, "band_id = ?", c.Param("id")).Error; gorm.IsRecordNotFoundError(err) {
+
+	}
+	for i := range reviews {
+		var user model.User
+		var booking model.Booking
+		db.Find(&user, reviews[i].UserID)
+		db.Find(&booking, reviews[i].BookingID)
+		db.Model(&booking).Related(&booking.Category)
+		db.Model(&booking).Related(&booking.Type)
+		reviews[i].User = &user
+		reviews[i].Booking = &booking
+	}
+	return c.JSON(http.StatusOK, reviews)
 }
 
 func getBandTitle(band model.Band) model.Band {
