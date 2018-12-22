@@ -71,12 +71,16 @@ func main() {
 	bands.POST("/news", bandNew)
 	bands.POST("/cheaps", bandCheap)
 	bands.POST("/detail", bandDetail)
+	bands.POST("/info", bandInfo)
+	bands.POST("/types", bandTypes)
+	bands.POST("/bookings", bandBookings)
+	bands.POST("/reviews", bandReviews)
 	bands.POST("/favourite", favourite)
 	bands.POST("/favourite_check", checkFavourite)
 
-	bands.GET("/info/:id", testbandbandInfo)
+	bands.GET("/info/:id", testbandInfo)
 	bands.GET("/types/:id", testbandTypes)
-	bands.GET("/bookings/:id", testbandbandBookings)
+	bands.GET("/bookings/:id", testbandBookings)
 	bands.GET("/reviews/:id", testbandReviews)
 
 	e.GET("/db/refesh", refreshDB)
@@ -268,7 +272,7 @@ func bandDetail(c echo.Context) error {
 
 func bandInfo(c echo.Context) error {
 	var band model.Band
-	db.First(&band, c.Param("id"))
+	db.First(&band, c.FormValue("band_id"))
 
 	band = getBandTitle(band)
 	// band = getBandDetail(band)
@@ -278,7 +282,7 @@ func bandInfo(c echo.Context) error {
 
 func bandTypes(c echo.Context) error {
 	var bandType []model.BandType
-	if err := db.Find(&bandType, "band_id = ?", c.Param("id")).Error; gorm.IsRecordNotFoundError(err) {
+	if err := db.Find(&bandType, "band_id = ?", c.FormValue("band_id")).Error; gorm.IsRecordNotFoundError(err) {
 
 	}
 	for i := range bandType {
@@ -295,7 +299,7 @@ func bandTypes(c echo.Context) error {
 
 func bandBookings(c echo.Context) error {
 	var bookings []model.Booking
-	if err := db.Find(&bookings, "band_id = ?", c.Param("id")).Error; gorm.IsRecordNotFoundError(err) {
+	if err := db.Find(&bookings, "band_id = ?", c.FormValue("band_id")).Error; gorm.IsRecordNotFoundError(err) {
 
 	}
 	for i := range bookings {
@@ -307,7 +311,7 @@ func bandBookings(c echo.Context) error {
 }
 func bandReviews(c echo.Context) error {
 	var reviews []model.Review
-	if err := db.Find(&reviews, "band_id = ?", c.Param("id")).Error; gorm.IsRecordNotFoundError(err) {
+	if err := db.Find(&reviews, "band_id = ?", c.FormValue("band_id")).Error; gorm.IsRecordNotFoundError(err) {
 
 	}
 	for i := range reviews {
@@ -333,7 +337,7 @@ func testbandDetail(c echo.Context) error {
 	return c.JSON(http.StatusOK, band)
 }
 
-func testbandbandInfo(c echo.Context) error {
+func testbandInfo(c echo.Context) error {
 	var band model.Band
 	db.First(&band, c.Param("id"))
 
@@ -360,7 +364,7 @@ func testbandTypes(c echo.Context) error {
 	return c.JSON(http.StatusOK, bandType)
 }
 
-func testbandbandBookings(c echo.Context) error {
+func testbandBookings(c echo.Context) error {
 	var bookings []model.Booking
 	if err := db.Find(&bookings, "band_id = ?", c.Param("id")).Error; gorm.IsRecordNotFoundError(err) {
 
