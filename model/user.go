@@ -40,5 +40,5 @@ type SocailAccount struct {
 }
 
 type FavouriteCheck struct {
-	Status bool `json="status"`
+	Status bool `json:"status"`
 }

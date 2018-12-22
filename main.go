@@ -176,7 +176,7 @@ func disableUser(c echo.Context) error {
 }
 
 func favourite(c echo.Context) error {
-	var user model.User
+	var response Response
 	var favourite model.Favourite
 	userID := c.FormValue("user_id")
 	bandID := c.FormValue("band_id")
@@ -190,30 +190,12 @@ func favourite(c echo.Context) error {
 			UserID: uint(UserID),
 			BandID: uint(BandID),
 		})
-		db.First(&user, userID)
-		db.Model(&user).Related(&user.Role)
-		var favourites []model.Band
-		db.Joins("JOIN favourites ON favourites.band_id = bands.id AND favourites.user_id = ?", user.ID).Find(&favourites)
-		for i, band := range favourites {
-			var userBand model.User
-			db.First(&userBand, band.UserID)
-			favourites[i].User = &userBand
-		}
-		user.Favourites = favourites
-		return c.JSON(http.StatusOK, user)
+		response.Message = `favourite sucsses`
+		return c.JSON(http.StatusOK, response)
 	}
 	db.Delete(&favourite)
-	db.First(&user, userID)
-	db.Model(&user).Related(&user.Role)
-	var favourites []model.Band
-	db.Joins("JOIN favourites ON favourites.band_id = bands.id AND favourites.user_id = ?", user.ID).Find(&favourites)
-	for i, band := range favourites {
-		var userBand model.User
-		db.First(&userBand, band.UserID)
-		favourites[i].User = &userBand
-	}
-	user.Favourites = favourites
-	return c.JSON(http.StatusOK, user)
+	response.Message = `unfavourite sucsses`
+	return c.JSON(http.StatusOK, response)
 }
 
 func checkFavourite(c echo.Context) error {
@@ -446,5 +428,5 @@ func comparePasswords(hashedPwd string, plainPwd []byte) bool {
 }
 
 type Response struct {
-	Message string `json="message"`
+	Message string `json:"message"`
 }
