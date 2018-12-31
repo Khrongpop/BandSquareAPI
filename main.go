@@ -78,6 +78,10 @@ func main() {
 	bands.POST("/favourite", favourite)
 	bands.POST("/favourite_check", checkFavourite)
 
+	chats := e.Group("/chat")
+	chats.GET("/testgetchats", testgetChats)
+	chats.GET("/testgetchatuser", testgetChatUser)
+
 	bands.GET("/info/:id", testbandInfo)
 	bands.GET("/types/:id", testbandTypes)
 	bands.GET("/bookings/:id", testbandBookings)
@@ -90,7 +94,7 @@ func main() {
 }
 
 func login(c echo.Context) error {
-	var user model.User
+	user := model.User{}
 	name := c.FormValue("name")
 	if err := db.Where("name = ?", name).Or("email = ?", name).First(&user).Error; gorm.IsRecordNotFoundError(err) {
 		return c.JSON(http.StatusOK, "invalid user")
@@ -115,7 +119,7 @@ func login(c echo.Context) error {
 }
 
 func register(c echo.Context) error {
-	var user model.User
+	user := model.User{}
 	name := c.FormValue("name")
 	if err := db.Where("name = ?", name).Or("email = ?", name).First(&user).Error; gorm.IsRecordNotFoundError(err) {
 		user.Name = name
@@ -133,8 +137,8 @@ func register(c echo.Context) error {
 }
 
 func fblogin(c echo.Context) error {
-	var fb model.SocailAccount
-	var user model.User
+	fb := model.SocailAccount{}
+	user := model.User{}
 	providerID := c.FormValue("id")
 
 	if err := db.First(&fb, "provider_id = ?", providerID).Error; gorm.IsRecordNotFoundError(err) {
@@ -171,22 +175,22 @@ func fblogin(c echo.Context) error {
 }
 
 func enableUser(c echo.Context) error {
-	var user model.User
+	user := model.User{}
 	db.First(&user, c.FormValue("id"))
 	db.Model(&user).Update("active", true)
 	return c.JSON(http.StatusOK, `enable_user_sucsees`)
 }
 
 func disableUser(c echo.Context) error {
-	var user model.User
+	user := model.User{}
 	db.First(&user, c.FormValue("id"))
 	db.Model(&user).Update("active", false)
 	return c.JSON(http.StatusOK, `disable_user_sucsees`)
 }
 
 func favourite(c echo.Context) error {
-	var response Response
-	var favourite model.Favourite
+	favourite := model.Favourite{}
+	response := model.FavouriteCheck{}
 	userID := c.FormValue("user_id")
 	bandID := c.FormValue("band_id")
 	UserID, err := strconv.ParseUint(userID, 10, 32)
@@ -208,8 +212,8 @@ func favourite(c echo.Context) error {
 }
 
 func checkFavourite(c echo.Context) error {
-	var favourite model.Favourite
-	var response model.FavouriteCheck
+	favourite := model.Favourite{}
+	response := model.FavouriteCheck{}
 	if err = db.First(&favourite, `user_id = ? AND band_id = ?`, c.FormValue("user_id"), c.FormValue("band_id")).Error; gorm.IsRecordNotFoundError(err) {
 		response.Status = false
 		return c.JSON(http.StatusOK, response)
@@ -219,7 +223,7 @@ func checkFavourite(c echo.Context) error {
 }
 
 func bandRecommend(c echo.Context) error {
-	var bands []model.Band
+	bands := []model.Band{}
 	db.Table("bands").Select("* ,AVG(reviews.rate) as avg").Joins("JOIN reviews ON reviews.band_id = bands.id ").Group("bands.user_id").Order("avg desc").Scan(&bands)
 	for i := range bands {
 		bands[i] = getBandTitle(bands[i])
@@ -230,7 +234,7 @@ func bandRecommend(c echo.Context) error {
 }
 
 func bandOnline(c echo.Context) error {
-	var bands []model.Band
+	bands := []model.Band{}
 	db.Joins("JOIN users ON bands.user_id = users.id AND users.active = ?", 1).Find(&bands)
 	for i := range bands {
 		bands[i] = getBandTitle(bands[i])
@@ -240,7 +244,7 @@ func bandOnline(c echo.Context) error {
 }
 
 func bandNew(c echo.Context) error {
-	var bands []model.Band
+	bands := []model.Band{}
 	db.Table("bands").Select("* ").Joins("left join bookings ON bookings.band_id = bands.id ").Where("bookings.id IS NULL").Group("bands.user_id").Scan(&bands)
 	for i := range bands {
 		bands[i] = getBandTitle(bands[i])
@@ -250,7 +254,7 @@ func bandNew(c echo.Context) error {
 }
 
 func bandCheap(c echo.Context) error {
-	var bands []model.Band
+	bands := []model.Band{}
 	db.Find(&bands, "max_price < ?", 15000)
 	for i := range bands {
 		bands[i] = getBandTitle(bands[i])
@@ -260,7 +264,7 @@ func bandCheap(c echo.Context) error {
 }
 
 func bandDetail(c echo.Context) error {
-	var band model.Band
+	band := model.Band{}
 	// db.First(&band, c.Param("id"))
 	db.First(&band, c.FormValue("band_id"))
 
@@ -271,7 +275,7 @@ func bandDetail(c echo.Context) error {
 }
 
 func bandInfo(c echo.Context) error {
-	var band model.Band
+	band := model.Band{}
 	db.First(&band, c.FormValue("band_id"))
 
 	band = getBandTitle(band)
@@ -281,7 +285,7 @@ func bandInfo(c echo.Context) error {
 }
 
 func bandTypes(c echo.Context) error {
-	var bandType []model.BandType
+	bandType := []model.BandType{}
 	if err := db.Find(&bandType, "band_id = ?", c.FormValue("band_id")).Error; gorm.IsRecordNotFoundError(err) {
 
 	}
@@ -298,7 +302,7 @@ func bandTypes(c echo.Context) error {
 }
 
 func bandBookings(c echo.Context) error {
-	var bookings []model.Booking
+	bookings := []model.Booking{}
 	if err := db.Find(&bookings, "band_id = ?", c.FormValue("band_id")).Error; gorm.IsRecordNotFoundError(err) {
 
 	}
@@ -310,7 +314,7 @@ func bandBookings(c echo.Context) error {
 	return c.JSON(http.StatusOK, bookings)
 }
 func bandReviews(c echo.Context) error {
-	var reviews []model.Review
+	reviews := []model.Review{}
 	if err := db.Find(&reviews, "band_id = ?", c.FormValue("band_id")).Error; gorm.IsRecordNotFoundError(err) {
 
 	}
@@ -328,7 +332,7 @@ func bandReviews(c echo.Context) error {
 }
 
 func testbandDetail(c echo.Context) error {
-	var band model.Band
+	band := model.Band{}
 	db.First(&band, c.Param("id"))
 
 	band = getBandTitle(band)
@@ -338,7 +342,7 @@ func testbandDetail(c echo.Context) error {
 }
 
 func testbandInfo(c echo.Context) error {
-	var band model.Band
+	band := model.Band{}
 	db.First(&band, c.Param("id"))
 
 	band = getBandTitle(band)
@@ -348,14 +352,14 @@ func testbandInfo(c echo.Context) error {
 }
 
 func testbandTypes(c echo.Context) error {
-	var bandType []model.BandType
+	bandType := []model.BandType{}
 	if err := db.Find(&bandType, "band_id = ?", c.Param("id")).Error; gorm.IsRecordNotFoundError(err) {
 
 	}
 	for i := range bandType {
 		db.Model(&bandType[i]).Related(&bandType[i].Type)
-		var images []model.BandImage
-		var videos []model.BandVideo
+		images := []model.BandImage{}
+		videos := []model.BandVideo{}
 		db.Find(&images, `bandtype_id = ?`, bandType[i].ID)
 		db.Find(&videos, `bandtype_id = ?`, bandType[i].ID)
 		bandType[i].Images = images
@@ -365,7 +369,7 @@ func testbandTypes(c echo.Context) error {
 }
 
 func testbandBookings(c echo.Context) error {
-	var bookings []model.Booking
+	bookings := []model.Booking{}
 	if err := db.Find(&bookings, "band_id = ?", c.Param("id")).Error; gorm.IsRecordNotFoundError(err) {
 
 	}
@@ -377,13 +381,13 @@ func testbandBookings(c echo.Context) error {
 	return c.JSON(http.StatusOK, bookings)
 }
 func testbandReviews(c echo.Context) error {
-	var reviews []model.Review
+	reviews := []model.Review{}
 	if err := db.Find(&reviews, "band_id = ?", c.Param("id")).Error; gorm.IsRecordNotFoundError(err) {
 
 	}
 	for i := range reviews {
-		var user model.User
-		var booking model.Booking
+		user := model.User{}
+		booking := model.Booking{}
 		db.Find(&user, reviews[i].UserID)
 		db.Find(&booking, reviews[i].BookingID)
 		db.Model(&booking).Related(&booking.Category)
@@ -392,6 +396,26 @@ func testbandReviews(c echo.Context) error {
 		reviews[i].Booking = &booking
 	}
 	return c.JSON(http.StatusOK, reviews)
+}
+
+func testgetChats(c echo.Context) error {
+	chats := []model.Chat{}
+	db.Find(&chats)
+	for i := range chats {
+		db.Model(&chats[i]).Related(&chats[i].User)
+		db.Model(&chats[i]).Related(&chats[i].ToUser, "ToID")
+	}
+	return c.JSON(http.StatusOK, chats)
+}
+
+func testgetChatUser(c echo.Context) error {
+	chats := []model.Chat{}
+	db.Find(&chats)
+	for i := range chats {
+		db.Model(&chats[i]).Related(&chats[i].User)
+		db.Model(&chats[i]).Related(&chats[i].ToUser, "ToID")
+	}
+	return c.JSON(http.StatusOK, chats)
 }
 
 func getBandTitle(band model.Band) model.Band {
@@ -453,7 +477,7 @@ func getBandDetail(band model.Band) model.Band {
 }
 
 func create(c echo.Context) error {
-	var user model.User
+	user := model.User{}
 	if err := c.Bind(&user); err != nil {
 		return err
 	}

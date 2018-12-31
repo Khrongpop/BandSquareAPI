@@ -7,10 +7,6 @@ import (
 	echo "github.com/labstack/echo"
 )
 
-func AuthRoute(e) {
-	e.POST("/auth/login", login)
-}
-
 func login(c echo.Context) error {
 	var user model.User
 	// if err := c.Bind(&user); err != nil {
