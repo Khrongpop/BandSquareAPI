@@ -79,8 +79,9 @@ func main() {
 	bands.POST("/favourite_check", checkFavourite)
 
 	chats := e.Group("/chat")
-	chats.GET("/testgetchats", testgetChats)
+	chats.GET("/testgetchats/:uID", testgetChats)
 	chats.GET("/testgetchatuser/:uID/:tID", testgetChatUser)
+	chats.POST("/testgetchatuser", getChatUser)
 
 	bands.GET("/info/:id", testbandInfo)
 	bands.GET("/types/:id", testbandTypes)
@@ -400,7 +401,43 @@ func testbandReviews(c echo.Context) error {
 
 func testgetChats(c echo.Context) error {
 	chats := []model.Chat{}
-	db.Find(&chats)
+	userChats := []model.Chat{}
+	if err := db.Where(`user_id = ? `, c.Param(`uID`)).Or(`to_id = ? `, c.Param(`uID`)).Find(&chats).Error; gorm.IsRecordNotFoundError(err) {
+
+	}
+	for _, chat := range chats {
+
+		if len(userChats) > 0 {
+			valCheck := 0
+			for _, user := range userChats {
+
+				if user.UserID == chat.UserID && user.ToID == chat.ToID {
+					valCheck++
+				} else if user.UserID == chat.ToID && user.ToID == chat.UserID {
+					valCheck++
+				}
+
+				if valCheck == 0 {
+					db.Model(&chat).Related(&chat.User)
+					db.Model(&chat).Related(&chat.ToUser, "ToID")
+					userChats = append(userChats, chat)
+				}
+			}
+		} else {
+			db.Model(&chat).Related(&chat.User)
+			db.Model(&chat).Related(&chat.ToUser, "ToID")
+			userChats = append(userChats, chat)
+		}
+
+	}
+	return c.JSON(http.StatusOK, userChats)
+}
+
+func testgetChatUser(c echo.Context) error {
+	chats := []model.Chat{}
+	if err := db.Where(`user_id = ? AND to_id = ?`, c.Param(`uID`), c.Param(`tID`)).Or(`to_id = ? AND user_id = ?`, c.Param(`uID`), c.Param(`tID`)).Find(&chats).Error; gorm.IsRecordNotFoundError(err) {
+
+	}
 	for i := range chats {
 		db.Model(&chats[i]).Related(&chats[i].User)
 		db.Model(&chats[i]).Related(&chats[i].ToUser, "ToID")
@@ -408,9 +445,9 @@ func testgetChats(c echo.Context) error {
 	return c.JSON(http.StatusOK, chats)
 }
 
-func testgetChatUser(c echo.Context) error {
+func getChatUser(c echo.Context) error {
 	chats := []model.Chat{}
-	if err := db.Where(`user_id = ? AND to_id = ?`, c.Param(`uID`), c.Param(`tID`)).Or(`to_id = ? AND user_id = ?`, c.Param(`uID`), c.Param(`tID`)).Find(&chats).Error; gorm.IsRecordNotFoundError(err) {
+	if err := db.Where(`user_id = ? AND to_id = ?`, c.FormValue(`uID`), c.FormValue(`tID`)).Or(`to_id = ? AND user_id = ?`, c.FormValue(`uID`), c.FormValue(`tID`)).Find(&chats).Error; gorm.IsRecordNotFoundError(err) {
 
 	}
 	for i := range chats {
