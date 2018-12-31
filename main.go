@@ -80,7 +80,7 @@ func main() {
 
 	chats := e.Group("/chat")
 	chats.GET("/testgetchats", testgetChats)
-	chats.GET("/testgetchatuser", testgetChatUser)
+	chats.GET("/testgetchatuser/:uID/:tID", testgetChatUser)
 
 	bands.GET("/info/:id", testbandInfo)
 	bands.GET("/types/:id", testbandTypes)
@@ -190,7 +190,7 @@ func disableUser(c echo.Context) error {
 
 func favourite(c echo.Context) error {
 	favourite := model.Favourite{}
-	response := model.FavouriteCheck{}
+	response := Response{}
 	userID := c.FormValue("user_id")
 	bandID := c.FormValue("band_id")
 	UserID, err := strconv.ParseUint(userID, 10, 32)
@@ -410,7 +410,9 @@ func testgetChats(c echo.Context) error {
 
 func testgetChatUser(c echo.Context) error {
 	chats := []model.Chat{}
-	db.Find(&chats)
+	if err := db.Where(`user_id = ? AND to_id = ?`, c.Param(`uID`), c.Param(`tID`)).Or(`to_id = ? AND user_id = ?`, c.Param(`uID`), c.Param(`tID`)).Find(&chats).Error; gorm.IsRecordNotFoundError(err) {
+
+	}
 	for i := range chats {
 		db.Model(&chats[i]).Related(&chats[i].User)
 		db.Model(&chats[i]).Related(&chats[i].ToUser, "ToID")
