@@ -4,8 +4,8 @@ import "time"
 
 type Chat struct {
 	ID           uint      `gorm:"primary_key" json:"id"`
-	UserID       uint      `json:"user_id"`
-	ToID         uint      `json:"to_id"`
+	UserID       int       `json:"user_id"`
+	ToID         int       `json:"to_id"`
 	Message      string    `json:"message"`
 	Seen         bool      `json:"seen"`
 	User         User      `gorm:"foreignkey:UserID" json:"user"`

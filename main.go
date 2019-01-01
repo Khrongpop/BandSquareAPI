@@ -82,7 +82,10 @@ func main() {
 	chats.GET("/testgetchats/:uID", testgetChats)
 	chats.GET("/testgetchatuser/:uID/:tID", testgetChatUser)
 	chats.POST("/testgetchatuser", getChatUser)
+	chats.POST("/getchats", getChat)
+	chats.POST("/store", storeChat)
 
+	// TEST API
 	bands.GET("/info/:id", testbandInfo)
 	bands.GET("/types/:id", testbandTypes)
 	bands.GET("/bookings/:id", testbandBookings)
@@ -332,6 +335,78 @@ func bandReviews(c echo.Context) error {
 	return c.JSON(http.StatusOK, reviews)
 }
 
+func getChat(c echo.Context) error {
+	chats := []model.Chat{}
+	userChats := []model.Chat{}
+	if err := db.Where(`user_id = ? `, c.FormValue(`uID`)).Or(`to_id = ? `, c.FormValue(`uID`)).Find(&chats).Error; gorm.IsRecordNotFoundError(err) {
+
+	}
+	for _, chat := range chats {
+
+		if len(userChats) > 0 {
+			valCheck := 0
+			for _, user := range userChats {
+
+				if user.UserID == chat.UserID && user.ToID == chat.ToID {
+					valCheck++
+				} else if user.UserID == chat.ToID && user.ToID == chat.UserID {
+					valCheck++
+				}
+
+				if valCheck == 0 {
+					db.Model(&chat).Related(&chat.User)
+					db.Model(&chat).Related(&chat.ToUser, "ToID")
+					userChats = append(userChats, chat)
+				}
+			}
+		} else {
+			db.Model(&chat).Related(&chat.User)
+			db.Model(&chat).Related(&chat.ToUser, "ToID")
+			userChats = append(userChats, chat)
+		}
+
+	}
+	return c.JSON(http.StatusOK, userChats)
+}
+func getChatUser(c echo.Context) error {
+	chats := []model.Chat{}
+	userID, err := strconv.ParseInt(c.FormValue(`uID`), 10, 64)
+	if err != nil {
+		fmt.Println(err)
+	}
+	if err := db.Where(`user_id = ? AND to_id = ?`, c.FormValue(`uID`), c.FormValue(`tID`)).Or(`to_id = ? AND user_id = ?`, c.FormValue(`uID`), c.FormValue(`tID`)).Find(&chats).Error; gorm.IsRecordNotFoundError(err) {
+
+	}
+	for i := range chats {
+		if chats[i].ToID == int(userID) && chats[i].Seen == false {
+			db.Model(&chats[i]).Update("Seen", true)
+		}
+		db.Model(&chats[i]).Related(&chats[i].User)
+		db.Model(&chats[i]).Related(&chats[i].ToUser, "ToID")
+	}
+	return c.JSON(http.StatusOK, chats)
+}
+
+func storeChat(c echo.Context) error {
+	chat := model.Chat{}
+
+	userID, err := strconv.ParseInt(c.FormValue(`user_id`), 10, 64)
+	if err != nil {
+		fmt.Println(err)
+	}
+	toID, err := strconv.ParseInt(c.FormValue(`to_id`), 10, 64)
+	if err != nil {
+		fmt.Println(err)
+	}
+	chat.UserID = int(userID)
+	chat.ToID = int(toID)
+	chat.Message = c.FormValue(`message`)
+	db.Create(&chat)
+	res := Response{}
+	res.Message = `create chat sucsess`
+	return c.JSON(http.StatusOK, res)
+}
+
 func testbandDetail(c echo.Context) error {
 	band := model.Band{}
 	db.First(&band, c.Param("id"))
@@ -436,18 +511,6 @@ func testgetChats(c echo.Context) error {
 func testgetChatUser(c echo.Context) error {
 	chats := []model.Chat{}
 	if err := db.Where(`user_id = ? AND to_id = ?`, c.Param(`uID`), c.Param(`tID`)).Or(`to_id = ? AND user_id = ?`, c.Param(`uID`), c.Param(`tID`)).Find(&chats).Error; gorm.IsRecordNotFoundError(err) {
-
-	}
-	for i := range chats {
-		db.Model(&chats[i]).Related(&chats[i].User)
-		db.Model(&chats[i]).Related(&chats[i].ToUser, "ToID")
-	}
-	return c.JSON(http.StatusOK, chats)
-}
-
-func getChatUser(c echo.Context) error {
-	chats := []model.Chat{}
-	if err := db.Where(`user_id = ? AND to_id = ?`, c.FormValue(`uID`), c.FormValue(`tID`)).Or(`to_id = ? AND user_id = ?`, c.FormValue(`uID`), c.FormValue(`tID`)).Find(&chats).Error; gorm.IsRecordNotFoundError(err) {
 
 	}
 	for i := range chats {
