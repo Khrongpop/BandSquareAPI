@@ -29,7 +29,7 @@ func main() {
 	viper.AutomaticEnv()
 	port := ":" + viper.GetString("port")
 	// port := ":1323"
-	datasource := viper.GetString("CLEARDB_DATABASE_URL")
+	// datasource := viper.GetString("CLEARDB_DATABASE_URL")
 
 	mysqlUser := "b85b02f8218929"
 	mysqlPass := "1642c1e7"
@@ -52,7 +52,7 @@ func main() {
 	e := echo.New()
 
 	e.GET("/", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Hello, World! test"+datasource)
+		return c.String(http.StatusOK, "Hello, World! test")
 	})
 
 	auth := e.Group("/auth")
@@ -77,11 +77,13 @@ func main() {
 	bands.POST("/reviews", bandReviews)
 	bands.POST("/favourite", favourite)
 	bands.POST("/favourite_check", checkFavourite)
+	bands.POST("/bands_categories", bandCategories)
+	bands.GET("/bands_categories/:id", bandCategories)
 
 	chats := e.Group("/chat")
 	chats.GET("/testgetchats/:uID", testgetChats)
 	chats.GET("/testgetchatuser/:uID/:tID", testgetChatUser)
-	chats.POST("/testgetchatuser", getChatUser)
+	chats.POST("/getchatuser", getChatUser)
 	chats.POST("/getchats", getChat)
 	chats.POST("/store", storeChat)
 
@@ -267,6 +269,15 @@ func bandCheap(c echo.Context) error {
 	return c.JSON(http.StatusOK, bands)
 }
 
+func bandCategories(c echo.Context) error {
+	bands := []model.Band{}
+	db.Joins("JOIN band_categories on bands.id = band_categories.band_id AND band_categories.category_id = ?", c.FormValue(`cat_id`)).Find(&bands)
+	for i := range bands {
+		bands[i] = getBandTitle(bands[i])
+	}
+	return c.JSON(http.StatusOK, bands)
+}
+
 func bandDetail(c echo.Context) error {
 	band := model.Band{}
 	// db.First(&band, c.Param("id"))
@@ -338,7 +349,7 @@ func bandReviews(c echo.Context) error {
 func getChat(c echo.Context) error {
 	chats := []model.Chat{}
 	userChats := []model.Chat{}
-	if err := db.Where(`user_id = ? `, c.FormValue(`uID`)).Or(`to_id = ? `, c.FormValue(`uID`)).Find(&chats).Error; gorm.IsRecordNotFoundError(err) {
+	if err := db.Where(`user_id = ? `, c.FormValue(`uID`)).Or(`to_id = ? `, c.FormValue(`uID`)).Order("created_at desc").Find(&chats).Error; gorm.IsRecordNotFoundError(err) {
 
 	}
 	for _, chat := range chats {
