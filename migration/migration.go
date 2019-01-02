@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/jinzhu/gorm"
-	"github.com/khrongpop/BandSquareAPI/migration/seeder"
 	"github.com/khrongpop/BandSquareAPI/model"
 )
 
@@ -39,9 +38,9 @@ func dataSeed(db *gorm.DB) {
 	// seeder.ReviewSeed(db)
 	// seeder.FavouriteSeed(db)
 	// seeder.ChatSeed(db)
-	seeder.BookingBandSeed(db)
-	seeder.BookingGenreSeed(db)
-	addForeignKey(db)
+	// seeder.BookingBandSeed(db)
+	// seeder.BookingGenreSeed(db)
+	// addForeignKey(db)
 }
 
 func addForeignKey(db *gorm.DB) {
@@ -81,7 +80,7 @@ func RefreshDB(db *gorm.DB) {
 	// db.DropTable(&model.Review{}, &model.Booking{}, &model.BandImage{}, &model.BandVideo{}, &model.BandGenre{}, &model.BandCategory{}, &model.BandType{}, &model.Band{})
 	// db.DropTable(&model.Favourite{})
 	fmt.Println("migrate table ...")
-	db.AutoMigrate(&model.Booking{})
+	// db.AutoMigrate(&model.Booking{})
 	// db.AutoMigrate(&model.Band{}, &model.BandType{}, &model.BandCategory{}, &model.BandGenre{}, &model.Booking{}, &model.Review{}, &model.BandImage{}, &model.BandVideo{})
 	fmt.Println("seed table ...")
 	dataSeed(db)

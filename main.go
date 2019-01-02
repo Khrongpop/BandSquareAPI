@@ -430,6 +430,9 @@ func getCurrentBooking(c echo.Context) error {
 		db.Model(&bookings[i]).Related(&bookings[i].User)
 		db.Model(&bookings[i]).Related(&bookings[i].Category)
 		db.Model(&bookings[i]).Related(&bookings[i].Type)
+		db.Model(&bookings[i]).Related(&bookings[i].BandSelect, "band_select")
+		db.Model(&bookings[i]).Related(&bookings[i].Genres, "genres")
+		// db.Model(&band).Related(&band.Categories, "categories")
 
 		// bandSelect := []model.Band{}
 		// db.Joins(`JOIN `)

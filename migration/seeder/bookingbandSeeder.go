@@ -8,7 +8,7 @@ import (
 )
 
 func BookingBandSeed(db *gorm.DB) {
-	fmt.Println("seed BandVideo ...")
+	fmt.Println("seed BookingBandSeed ...")
 	db.Create(&model.BookingBand{
 		BookingID: 1,
 		BandID:    1,
