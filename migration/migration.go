@@ -38,7 +38,9 @@ func dataSeed(db *gorm.DB) {
 	// seeder.BookingSeed(db)
 	// seeder.ReviewSeed(db)
 	// seeder.FavouriteSeed(db)
-	seeder.ChatSeed(db)
+	// seeder.ChatSeed(db)
+	seeder.BookingBandSeed(db)
+	seeder.BookingGenreSeed(db)
 	addForeignKey(db)
 }
 
@@ -58,13 +60,17 @@ func addForeignKey(db *gorm.DB) {
 	// db.Model(&model.Booking{}).AddForeignKey("band_id", "bands(id)", "cascade", "RESTRICT")
 	// db.Model(&model.Booking{}).AddForeignKey("category_id", "categories(id)", "cascade", "RESTRICT")
 	// db.Model(&model.Booking{}).AddForeignKey("type_id", "types(id)", "cascade", "RESTRICT")
+	db.Model(&model.BookingBand{}).AddForeignKey("band_id", "bands(id)", "cascade", "RESTRICT")
+	db.Model(&model.BookingBand{}).AddForeignKey("booking_id", "bookings(id)", "cascade", "RESTRICT")
+	db.Model(&model.BookingGenre{}).AddForeignKey("genre_id", "genres(id)", "cascade", "RESTRICT")
+	db.Model(&model.BookingGenre{}).AddForeignKey("booking_id", "bookings(id)", "cascade", "RESTRICT")
 	// db.Model(&model.Review{}).AddForeignKey("user_id", "users(id)", "cascade", "RESTRICT")
 	// db.Model(&model.Review{}).AddForeignKey("band_id", "bands(id)", "cascade", "RESTRICT")
 	// db.Model(&model.Review{}).AddForeignKey("booking_id", "bookings(id)", "cascade", "RESTRICT")
 	// db.Model(&model.Favourite{}).AddForeignKey("user_id", "users(id)", "cascade", "RESTRICT")
 	// db.Model(&model.Favourite{}).AddForeignKey("band_id", "bands(id)", "cascade", "RESTRICT")
-	db.Model(&model.Chat{}).AddForeignKey("user_id", "users(id)", "cascade", "RESTRICT")
-	db.Model(&model.Chat{}).AddForeignKey("to_id", "users(id)", "cascade", "RESTRICT")
+	// db.Model(&model.Chat{}).AddForeignKey("user_id", "users(id)", "cascade", "RESTRICT")
+	// db.Model(&model.Chat{}).AddForeignKey("to_id", "users(id)", "cascade", "RESTRICT")
 
 }
 
@@ -75,7 +81,7 @@ func RefreshDB(db *gorm.DB) {
 	// db.DropTable(&model.Review{}, &model.Booking{}, &model.BandImage{}, &model.BandVideo{}, &model.BandGenre{}, &model.BandCategory{}, &model.BandType{}, &model.Band{})
 	// db.DropTable(&model.Favourite{})
 	fmt.Println("migrate table ...")
-	db.AutoMigrate(&model.Chat{})
+	db.AutoMigrate(&model.Booking{})
 	// db.AutoMigrate(&model.Band{}, &model.BandType{}, &model.BandCategory{}, &model.BandGenre{}, &model.Booking{}, &model.Review{}, &model.BandImage{}, &model.BandVideo{})
 	fmt.Println("seed table ...")
 	dataSeed(db)

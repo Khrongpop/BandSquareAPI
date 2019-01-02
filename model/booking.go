@@ -27,4 +27,18 @@ type Booking struct {
 	Type             Type      `json:"type"`
 	Date             *string   `json:"date"`
 	Time             *string   `json:"time"`
+	// BandSelect       *[]Band   `json:"band_select"`
+	// Genres           []Genre   `json:"genres"`
+	BandSelect []Band  `gorm:"many2many:booking_bands" json:"band_select"`
+	Genres     []Genre `gorm:"many2many:booking_genres" json:"genres"`
+}
+
+type BookingBand struct {
+	BandID    int `gorm:"primary_key:true" json:"band_id"`
+	BookingID int `gorm:"primary_key:true" json:"genre_id"`
+}
+
+type BookingGenre struct {
+	BookingID int `gorm:"primary_key:true" json:"booking_id"`
+	GenreID   int `gorm:"primary_key:true" json:"genre_id"`
 }

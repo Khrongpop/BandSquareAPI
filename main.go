@@ -87,6 +87,9 @@ func main() {
 	chats.POST("/getchats", getChat)
 	chats.POST("/store", storeChat)
 
+	bookings := e.Group("/booking")
+	bookings.GET("/testcurbooking/:id", getCurrentBooking)
+
 	// TEST API
 	bands.GET("/info/:id", testbandInfo)
 	bands.GET("/types/:id", testbandTypes)
@@ -416,6 +419,30 @@ func storeChat(c echo.Context) error {
 	res := Response{}
 	res.Message = `create chat sucsess`
 	return c.JSON(http.StatusOK, res)
+}
+
+func getCurrentBooking(c echo.Context) error {
+	bookings := []model.Booking{}
+	if err := db.Find(&bookings, `user_id = ?`, c.Param(`id`)).Error; gorm.IsRecordNotFoundError(err) {
+		return c.JSON(http.StatusOK, `booking`)
+	}
+	for i := range bookings {
+		db.Model(&bookings[i]).Related(&bookings[i].User)
+		db.Model(&bookings[i]).Related(&bookings[i].Category)
+		db.Model(&bookings[i]).Related(&bookings[i].Type)
+
+		// bandSelect := []model.Band{}
+		// db.Joins(`JOIN `)
+
+		if bookings[i].BandID != nil {
+			band := model.Band{}
+			if err := db.First(&band, `id = ?`, bookings[i].BandID).Error; gorm.IsRecordNotFoundError(err) {
+
+			}
+			bookings[i].Band = &band
+		}
+	}
+	return c.JSON(http.StatusOK, bookings)
 }
 
 func testbandDetail(c echo.Context) error {
