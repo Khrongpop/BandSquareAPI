@@ -427,10 +427,7 @@ func storeChat(c echo.Context) error {
 }
 
 func quickBook(c echo.Context) error {
-	userID, err := strconv.ParseUint(c.FormValue(`user_id`), 10, 64)
-	if err != nil {
-		fmt.Println(err)
-	}
+
 	catID, err := strconv.ParseUint(c.FormValue(`category_id`), 10, 64)
 	if err != nil {
 		fmt.Println(err)
@@ -439,16 +436,46 @@ func quickBook(c echo.Context) error {
 	if err != nil {
 		fmt.Println(err)
 	}
+
+	price, err := strconv.ParseFloat(c.FormValue(`price`), 64)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	s := strings.Split(c.FormValue(`genres`), `,`)
+	genres := []int64{}
+	for _, gen := range s {
+		genreID, err := strconv.ParseInt(gen, 10, 64)
+		if err != nil {
+			fmt.Println(err)
+		}
+		genres = append(genres, genreID)
+	}
+
+	bands := []model.Band{}
+	if err := db.Table("bands").Select("*").
+		Joins(`JOIN band_genres ON bands.id = band_genres.band_id `).
+		Joins(`JOIN band_types ON bands.id = band_types.band_id `).
+		Joins(`JOIN band_categories ON bands.id = band_categories.band_id `).
+		Where("band_genres.genre_id IN (?) AND bands.max_price  < ?  AND band_types.type_id = ? AND band_categories.category_id = ?", genres, price, typeID, catID).
+		Group("bands.user_id").
+		Scan(&bands).Error; gorm.IsRecordNotFoundError(err) {
+		return c.JSON(http.StatusOK, `not fount band`)
+	}
+	if len(bands) == 0 {
+		return c.JSON(http.StatusOK, `not fount band`)
+	}
+
+	userID, err := strconv.ParseUint(c.FormValue(`user_id`), 10, 64)
+	if err != nil {
+		fmt.Println(err)
+	}
+
 	lat, err := strconv.ParseFloat(c.FormValue(`latitude`), 64)
 	if err != nil {
 		fmt.Println(err)
 	}
 	lon, err := strconv.ParseFloat(c.FormValue(`longitude`), 64)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	price, err := strconv.ParseFloat(c.FormValue(`price`), 64)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -469,19 +496,21 @@ func quickBook(c echo.Context) error {
 		Price:      price,
 	}
 
-	db.Create(&booking)
-
-	s := strings.Split(c.FormValue(`genres`), `,`)
-	for _, gen := range s {
-		genID, err := strconv.ParseInt(gen, 10, 64)
-		if err != nil {
-			fmt.Println(err)
-		}
+	for _, genID := range genres {
 		db.Create(&model.BookingGenre{
 			GenreID:   int(genID),
 			BookingID: int(booking.ID),
 		})
 	}
+
+	for _, band := range bands {
+		db.Create(&model.BookingBand{
+			BandID:    int(band.ID),
+			BookingID: int(booking.ID),
+		})
+	}
+
+	db.Create(&booking)
 
 	return c.JSON(http.StatusOK, booking)
 }
