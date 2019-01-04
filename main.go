@@ -495,6 +495,7 @@ func quickBook(c echo.Context) error {
 		Duration:   c.FormValue(`duration`),
 		Price:      price,
 	}
+	db.Create(&booking)
 
 	for _, genID := range genres {
 		db.Create(&model.BookingGenre{
@@ -509,8 +510,6 @@ func quickBook(c echo.Context) error {
 			BookingID: int(booking.ID),
 		})
 	}
-
-	db.Create(&booking)
 
 	return c.JSON(http.StatusOK, booking)
 }
