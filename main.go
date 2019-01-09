@@ -453,17 +453,20 @@ func quickBook(c echo.Context) error {
 	}
 
 	bands := []model.Band{}
+	res := Response{Message: `not fount band`}
+
 	if err := db.Table("bands").Select("*").
 		Joins(`JOIN band_genres ON bands.id = band_genres.band_id `).
 		Joins(`JOIN band_types ON bands.id = band_types.band_id `).
 		Joins(`JOIN band_categories ON bands.id = band_categories.band_id `).
-		Where("band_genres.genre_id IN (?) AND bands.max_price  < ?  AND band_types.type_id = ? AND band_categories.category_id = ?", genres, price, typeID, catID).
+		Where("band_genres.genre_id IN (?) AND bands.min_price  > ?  AND band_types.type_id = ? AND band_categories.category_id = ?", genres, price, typeID, catID).
 		Group("bands.user_id").
 		Scan(&bands).Error; gorm.IsRecordNotFoundError(err) {
-		return c.JSON(http.StatusOK, `not fount band`)
+
+		return c.JSON(http.StatusOK, res)
 	}
 	if len(bands) == 0 {
-		return c.JSON(http.StatusOK, `not fount band`)
+		return c.JSON(http.StatusOK, res)
 	}
 
 	userID, err := strconv.ParseUint(c.FormValue(`user_id`), 10, 64)
@@ -504,10 +507,19 @@ func quickBook(c echo.Context) error {
 		})
 	}
 
+	user := model.User{}
+	db.First(&user, userID)
+
 	for _, band := range bands {
 		db.Create(&model.BookingBand{
 			BandID:    int(band.ID),
 			BookingID: int(booking.ID),
+		})
+		db.Create(&model.Notification{
+			BookingID: getID(int(booking.ID)),
+			UserID:    int(band.UserID),
+			Title:     `new Order`,
+			Detail:    `new Order by ` + user.Name,
 		})
 	}
 
@@ -836,4 +848,8 @@ func comparePasswords(hashedPwd string, plainPwd []byte) bool {
 
 type Response struct {
 	Message string `json:"message"`
+}
+
+func getID(x int) *int {
+	return &x
 }
