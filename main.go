@@ -95,6 +95,9 @@ func main() {
 	bookings.POST("/quick_booking", quickBook)
 	bookings.GET("/testcurbooking/:id", getCurrentBookingBand)
 
+	notifications := e.Group("/notification")
+	notifications.POST("/get_user_noti", getNotification)
+
 	// TEST API
 	bands.GET("/info/:id", testbandInfo)
 	bands.GET("/types/:id", testbandTypes)
@@ -234,6 +237,13 @@ func checkFavourite(c echo.Context) error {
 	}
 	response.Status = true
 	return c.JSON(http.StatusOK, response)
+}
+
+func getNotification(c echo.Context) error {
+	notifitions := []model.Notification{}
+
+	db.Order("created_at desc").Find(&notifitions, `user_id = ?`, c.FormValue(`user_id`))
+	return c.JSON(http.StatusOK, notifitions)
 }
 
 func bandRecommend(c echo.Context) error {

@@ -59,10 +59,10 @@ func addForeignKey(db *gorm.DB) {
 	// db.Model(&model.Booking{}).AddForeignKey("band_id", "bands(id)", "cascade", "RESTRICT")
 	// db.Model(&model.Booking{}).AddForeignKey("category_id", "categories(id)", "cascade", "RESTRICT")
 	// db.Model(&model.Booking{}).AddForeignKey("type_id", "types(id)", "cascade", "RESTRICT")
-	db.Model(&model.BookingBand{}).AddForeignKey("band_id", "bands(id)", "cascade", "RESTRICT")
-	db.Model(&model.BookingBand{}).AddForeignKey("booking_id", "bookings(id)", "cascade", "RESTRICT")
-	db.Model(&model.BookingGenre{}).AddForeignKey("genre_id", "genres(id)", "cascade", "RESTRICT")
-	db.Model(&model.BookingGenre{}).AddForeignKey("booking_id", "bookings(id)", "cascade", "RESTRICT")
+	// db.Model(&model.BookingBand{}).AddForeignKey("band_id", "bands(id)", "cascade", "RESTRICT")
+	// db.Model(&model.BookingBand{}).AddForeignKey("booking_id", "bookings(id)", "cascade", "RESTRICT")
+	// db.Model(&model.BookingGenre{}).AddForeignKey("genre_id", "genres(id)", "cascade", "RESTRICT")
+	// db.Model(&model.BookingGenre{}).AddForeignKey("booking_id", "bookings(id)", "cascade", "RESTRICT")
 	// db.Model(&model.Review{}).AddForeignKey("user_id", "users(id)", "cascade", "RESTRICT")
 	// db.Model(&model.Review{}).AddForeignKey("band_id", "bands(id)", "cascade", "RESTRICT")
 	// db.Model(&model.Review{}).AddForeignKey("booking_id", "bookings(id)", "cascade", "RESTRICT")
@@ -70,6 +70,8 @@ func addForeignKey(db *gorm.DB) {
 	// db.Model(&model.Favourite{}).AddForeignKey("band_id", "bands(id)", "cascade", "RESTRICT")
 	// db.Model(&model.Chat{}).AddForeignKey("user_id", "users(id)", "cascade", "RESTRICT")
 	// db.Model(&model.Chat{}).AddForeignKey("to_id", "users(id)", "cascade", "RESTRICT")
+	db.Model(&model.Notification{}).AddForeignKey("booking_id", "bookings(id)", "cascade", "RESTRICT")
+	db.Model(&model.Notification{}).AddForeignKey("user_id", "users(id)", "cascade", "RESTRICT")
 
 }
 
