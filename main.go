@@ -93,6 +93,7 @@ func main() {
 	bookings.POST("/current_booking", getCurrentBooking)
 	bookings.POST("/current_booking_band", getCurrentBookingBand)
 	bookings.POST("/quick_booking", quickBook)
+	bookings.POST("/select_band", selectBandBooking)
 	bookings.GET("/testcurbooking/:id", getCurrentBookingBand)
 
 	notifications := e.Group("/notification")
@@ -536,6 +537,25 @@ func quickBook(c echo.Context) error {
 	return c.JSON(http.StatusOK, booking)
 }
 
+func selectBandBooking(c echo.Context) error {
+	res := Response{}
+	booking := model.Booking{}
+	if err := db.First(&booking, c.FormValue(`booking_id`)).Error; gorm.IsRecordNotFoundError(err) {
+		res.Message = `Not Found Booking`
+		return c.JSON(http.StatusOK, res)
+	}
+
+	bandID, err := strconv.ParseUint(c.FormValue(`band_id`), 10, 64)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	db.Model(&booking).Updates(map[string]interface{}{"band_id": bandID, "status": 2})
+
+	res.Message = `Select Band Success`
+	return c.JSON(http.StatusOK, res)
+}
+
 func getCurrentBooking(c echo.Context) error {
 	bookings := []model.Booking{}
 	if err := db.Find(&bookings, `user_id = ?`, c.FormValue(`user_id`)).Error; gorm.IsRecordNotFoundError(err) {
@@ -861,5 +881,8 @@ type Response struct {
 }
 
 func getID(x int) *int {
+	return &x
+}
+func getUID(x uint) *uint {
 	return &x
 }
