@@ -96,6 +96,8 @@ func main() {
 	bookings.POST("/select_band", selectBandBooking)
 	bookings.POST("/band_accept", bandAcceptBooking)
 	bookings.POST("/band_discard", bandDiscardtBooking)
+	bookings.POST("/payment", paymentBandBooking)
+	bookings.POST("/confirm", confirmBooking)
 	bookings.GET("/testcurbooking/:id", getCurrentBookingBand)
 
 	notifications := e.Group("/notification")
@@ -244,8 +246,16 @@ func checkFavourite(c echo.Context) error {
 
 func getNotification(c echo.Context) error {
 	notifitions := []model.Notification{}
-
+	booking := model.Booking{}
 	db.Order("created_at desc").Find(&notifitions, `user_id = ?`, c.FormValue(`user_id`))
+	for i := range notifitions {
+		db.Model(&notifitions[i]).Related(&notifitions[i].User)
+		db.First(&booking, `id = ?`, notifitions[i].BookingID)
+		db.Model(&booking).Related(&booking.User)
+		db.Model(&booking).Related(&booking.Category)
+		db.Model(&booking).Related(&booking.Type)
+		notifitions[i].Booking = &booking
+	}
 	return c.JSON(http.StatusOK, notifitions)
 }
 
@@ -579,6 +589,30 @@ func bandDiscardtBooking(c echo.Context) error {
 
 	db.Delete(&bookingBand)
 	res.Message = `Discard Success`
+	return c.JSON(http.StatusOK, res)
+}
+
+func paymentBandBooking(c echo.Context) error {
+	res := Response{}
+	booking := model.Booking{}
+	if err := db.First(&booking, c.FormValue(`booking_id`)).Error; gorm.IsRecordNotFoundError(err) {
+		res.Message = `Not Found Booking`
+		return c.JSON(http.StatusOK, res)
+	}
+	db.Model(&booking).Update("status", 3)
+	res.Message = `Payment Success`
+	return c.JSON(http.StatusOK, res)
+}
+
+func confirmBooking(c echo.Context) error {
+	res := Response{}
+	booking := model.Booking{}
+	if err := db.First(&booking, c.FormValue(`booking_id`)).Error; gorm.IsRecordNotFoundError(err) {
+		res.Message = `Not Found Booking`
+		return c.JSON(http.StatusOK, res)
+	}
+	db.Model(&booking).Update("status", 4)
+	res.Message = `Confirm Success`
 	return c.JSON(http.StatusOK, res)
 }
 

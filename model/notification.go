@@ -11,6 +11,6 @@ type Notification struct {
 	Detail    string    `json:"detail"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
-	User      *User     `gorm:"foreignkey:user_id" json:"user"`
+	User      User      `gorm:"foreignkey:user_id" json:"user"`
 	Booking   *Booking  `gorm:"foreignkey:booking_id" json:"booking"`
 }
