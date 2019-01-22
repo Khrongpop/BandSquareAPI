@@ -198,15 +198,13 @@ func fblogin(c echo.Context) error {
 
 func enableUser(c echo.Context) error {
 	user := model.User{}
-	db.First(&user, c.FormValue("id"))
-	db.Model(&user).Update("active", true)
+	db.Model(&user).Where("id = ?", c.FormValue("id")).Update("active", true)
 	return c.JSON(http.StatusOK, `enable_user_sucsees`)
 }
 
 func disableUser(c echo.Context) error {
 	user := model.User{}
-	db.First(&user, c.FormValue("id"))
-	db.Model(&user).Update("active", false)
+	db.Model(&user).Where("id = ?", c.FormValue("id")).Update("active", false)
 	return c.JSON(http.StatusOK, `disable_user_sucsees`)
 }
 
@@ -394,12 +392,12 @@ func getChat(c echo.Context) error {
 				} else if user.UserID == chat.ToID && user.ToID == chat.UserID {
 					valCheck++
 				}
+			}
 
-				if valCheck == 0 {
-					db.Model(&chat).Related(&chat.User)
-					db.Model(&chat).Related(&chat.ToUser, "ToID")
-					userChats = append(userChats, chat)
-				}
+			if valCheck == 0 {
+				db.Model(&chat).Related(&chat.User)
+				db.Model(&chat).Related(&chat.ToUser, "ToID")
+				userChats = append(userChats, chat)
 			}
 		} else {
 			db.Model(&chat).Related(&chat.User)
@@ -482,7 +480,8 @@ func quickBook(c echo.Context) error {
 		Joins(`JOIN band_genres ON bands.id = band_genres.band_id `).
 		Joins(`JOIN band_types ON bands.id = band_types.band_id `).
 		Joins(`JOIN band_categories ON bands.id = band_categories.band_id `).
-		Where("band_genres.genre_id IN (?) AND bands.min_price  > ?  AND band_types.type_id = ? AND band_categories.category_id = ?", genres, price, typeID, catID).
+		Where("band_genres.genre_id IN (?) AND bands.min_price  > ?  AND band_types.type_id = ? AND band_categories.category_id = ?",
+			genres, price, typeID, catID).
 		Group("bands.user_id").
 		Scan(&bands).Error; gorm.IsRecordNotFoundError(err) {
 
@@ -737,7 +736,7 @@ func testbandReviews(c echo.Context) error {
 func testgetChats(c echo.Context) error {
 	chats := []model.Chat{}
 	userChats := []model.Chat{}
-	if err := db.Where(`user_id = ? `, c.Param(`uID`)).Or(`to_id = ? `, c.Param(`uID`)).Find(&chats).Error; gorm.IsRecordNotFoundError(err) {
+	if err := db.Where(`user_id = ? `, c.Param(`uID`)).Or(`to_id = ? `, c.Param(`uID`)).Order("created_at desc").Find(&chats).Error; gorm.IsRecordNotFoundError(err) {
 
 	}
 	for _, chat := range chats {
@@ -752,12 +751,14 @@ func testgetChats(c echo.Context) error {
 					valCheck++
 				}
 
-				if valCheck == 0 {
-					db.Model(&chat).Related(&chat.User)
-					db.Model(&chat).Related(&chat.ToUser, "ToID")
-					userChats = append(userChats, chat)
-				}
 			}
+
+			if valCheck == 0 {
+				db.Model(&chat).Related(&chat.User)
+				db.Model(&chat).Related(&chat.ToUser, "ToID")
+				userChats = append(userChats, chat)
+			}
+
 		} else {
 			db.Model(&chat).Related(&chat.User)
 			db.Model(&chat).Related(&chat.ToUser, "ToID")
