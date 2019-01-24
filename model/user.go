@@ -25,6 +25,7 @@ type User struct {
 	CreatedAt  time.Time `json:"created_at"`
 	UpdatedAt  time.Time `json:"updated_at"`
 	Favourites []Band    `json:"favourites"`
+	// Favourites []Band `gorm:"many2many:favourites" json:"favourites"`
 }
 
 type Favourite struct {

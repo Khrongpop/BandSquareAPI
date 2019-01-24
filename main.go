@@ -626,10 +626,10 @@ func getCurrentBooking(c echo.Context) error {
 		db.Model(&bookings[i]).Related(&bookings[i].Type)
 		db.Model(&bookings[i]).Related(&bookings[i].Genres, "genres")
 		db.Model(&bookings[i]).Related(&bookings[i].BandSelect, "booking_id")
-		for j, band := range bookings[i].BandSelect {
-			db.Model(&band).Related(&band.Band)
-			bookings[i].BandSelect[j].Band = band.Band
-		}
+		// for j, band := range bookings[i].BandSelect {
+		// db.Model(&band).Related(&band.Band)
+		// bookings[i].BandSelect[j].Band = band.Band
+		// }
 
 		if bookings[i].BandID != nil {
 			band := model.Band{}

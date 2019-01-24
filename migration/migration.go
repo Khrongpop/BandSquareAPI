@@ -78,19 +78,46 @@ func addForeignKey(db *gorm.DB) {
 
 func RefreshDB(db *gorm.DB) {
 	fmt.Println("drop table ...")
-	// db.DropTable(&model.BandType{}, &model.Band{}, &model.User{}, &model.Category{}, &model.Genre{}, &model.Type{}, &model.Role{})
-	// db.DropTable(&model.SocailAccount{}, &model.User{})
-	// db.DropTable(&model.BookingGenre{}, &model.Booking{}, &model.BandImage{}, &model.BandVideo{}, &model.BandGenre{}, &model.BandCategory{}, &model.BandType{}, &model.Band{}, &model.SocailAccount{}, &model.User{})
 
 	// DropTable to user
-	db.DropTable(&model.Notification{}, &model.Chat{}, &model.Favourite{}, &model.Review{}, &model.BookingBand{}, &model.BookingGenre{}, &model.Booking{}, &model.BandImage{}, &model.BandVideo{}, &model.BandGenre{}, &model.BandCategory{}, &model.BandType{}, &model.Band{}, &model.SocailAccount{}, &model.User{})
+	// db.DropTable(&model.Notification{}, &model.Chat{}, &model.Favourite{}, &model.Review{}, &model.BookingBand{}, &model.BookingGenre{}, &model.Booking{}, &model.BandImage{}, &model.BandVideo{}, &model.BandGenre{}, &model.BandCategory{}, &model.BandType{}, &model.Band{}, &model.SocailAccount{}, &model.User{})
+
+	// db.DropTable(&model.Notification{})
+	// db.DropTable(&model.Chat{})
+	// db.DropTable(&model.Favourite{})
+	// db.DropTable(&model.Review{})
+	// db.DropTable(&model.BookingGenre{})
+	// db.DropTable(&model.BookingBand{})
+	// db.DropTable(&model.Booking{})
+	// db.DropTable(&model.BandImage{})
+	// db.DropTable(&model.BandVideo{})
+	// db.DropTable(&model.BandGenre{})
+	// db.DropTable(&model.BandCategory{})
+	// db.DropTable(&model.BandType{})
+	// db.DropTable(&model.Band{})
+	// db.DropTable(&model.SocailAccount{})
+	// db.DropTable(&model.User{})
 
 	fmt.Println("migrate table ...")
-	// db.AutoMigrate(&model.Booking{}, &model.BookingBand{})
-	// db.AutoMigrate(&model.Notification{})
 
 	// AutoMigrate to user
-	db.AutoMigrate(&model.User{}, &model.SocailAccount{}, &model.Band{}, &model.BandType{}, &model.BandCategory{}, &model.BandGenre{}, &model.BandVideo{}, &model.BandImage{}, &model.Booking{}, &model.BookingBand{}, &model.BookingGenre{}, &model.Review{}, &model.Favourite{}, &model.Chat{}, &model.Notification{})
+	// db.AutoMigrate(&model.User{}, &model.SocailAccount{}, &model.Band{}, &model.BandType{}, &model.BandCategory{}, &model.BandGenre{}, &model.BandVideo{}, &model.BandImage{}, &model.Booking{}, &model.BookingBand{}, &model.BookingGenre{}, &model.Review{}, &model.Favourite{}, &model.Chat{}, &model.Notification{})
+
+	// db.AutoMigrate(&model.User{})
+	// db.AutoMigrate(&model.SocailAccount{})
+	// db.AutoMigrate(&model.Band{})
+	// db.AutoMigrate(&model.BandType{})
+	// db.AutoMigrate(&model.BandCategory{})
+	// db.AutoMigrate(&model.BandGenre{})
+	// db.AutoMigrate(&model.BandVideo{})
+	// db.AutoMigrate(&model.BandImage{})
+	// db.AutoMigrate(&model.Booking{})
+	// db.AutoMigrate(&model.BookingBand{})
+	// db.AutoMigrate(&model.BookingGenre{})
+	// db.AutoMigrate(&model.Review{})
+	// db.AutoMigrate(&model.Favourite{})
+	// db.AutoMigrate(&model.Chat{})
+	// db.AutoMigrate(&model.Notification{})
 
 	fmt.Println("seed table ...")
 	dataSeed(db)
