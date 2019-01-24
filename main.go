@@ -63,10 +63,11 @@ func main() {
 	auth.POST("/fblogin", fblogin)
 	auth.POST("/enable", enableUser)
 	auth.POST("/disable", disableUser)
+	auth.POST("/favourite", getFavourite)
 
 	bands := e.Group("/band")
 	bands.GET("/bands", bandslist)
-	bands.GET("/recommend", bandRecommend)
+	bands.GET("/recommend", bandOnline)
 	bands.GET("/detail/:id", testbandDetail)
 	bands.POST("/recommend", bandRecommend)
 	bands.POST("/onlines", bandOnline)
@@ -109,6 +110,8 @@ func main() {
 	bands.GET("/bookings/:id", testbandBookings)
 	bands.GET("/reviews/:id", testbandReviews)
 
+	// e.GET("/favourite", getFavourite)
+
 	e.GET("/db/refesh", refreshDB)
 
 	e.Logger.Fatal(e.Start(port))
@@ -125,10 +128,10 @@ func login(c echo.Context) error {
 	check := comparePasswords(user.Password, []byte(password))
 	if check {
 		db.Model(&user).Related(&user.Role)
-		var favourites []model.Band
+		favourites := []model.Band{}
 		db.Joins("JOIN favourites ON favourites.band_id = bands.id AND favourites.user_id = ?", user.ID).Find(&favourites)
 		for i, band := range favourites {
-			var userBand model.User
+			userBand := model.User{}
 			db.First(&userBand, band.UserID)
 			favourites[i].User = &userBand
 		}
@@ -193,6 +196,14 @@ func fblogin(c echo.Context) error {
 		log.Fatal(err)
 	}
 	db.Model(&user).Related(&user.Role)
+	favourites := []model.Band{}
+	db.Joins("JOIN favourites ON favourites.band_id = bands.id AND favourites.user_id = ?", user.ID).Find(&favourites)
+	for i, band := range favourites {
+		userBand := model.User{}
+		db.First(&userBand, band.UserID)
+		favourites[i].User = &userBand
+	}
+	user.Favourites = favourites
 	return c.JSON(http.StatusOK, user)
 }
 
@@ -206,6 +217,18 @@ func disableUser(c echo.Context) error {
 	user := model.User{}
 	db.Model(&user).Where("id = ?", c.FormValue("id")).Update("active", false)
 	return c.JSON(http.StatusOK, `disable_user_sucsees`)
+}
+
+func getFavourite(c echo.Context) error {
+	userID := c.FormValue("user_id")
+	favourites := []model.Band{}
+	db.Joins("JOIN favourites ON favourites.band_id = bands.id AND favourites.user_id = ?", userID).Find(&favourites)
+	for i, band := range favourites {
+		userBand := model.User{}
+		db.First(&userBand, band.UserID)
+		favourites[i].User = &userBand
+	}
+	return c.JSON(http.StatusOK, favourites)
 }
 
 func favourite(c echo.Context) error {
@@ -626,10 +649,10 @@ func getCurrentBooking(c echo.Context) error {
 		db.Model(&bookings[i]).Related(&bookings[i].Type)
 		db.Model(&bookings[i]).Related(&bookings[i].Genres, "genres")
 		db.Model(&bookings[i]).Related(&bookings[i].BandSelect, "booking_id")
-		// for j, band := range bookings[i].BandSelect {
-		// db.Model(&band).Related(&band.Band)
-		// bookings[i].BandSelect[j].Band = band.Band
-		// }
+		for j, band := range bookings[i].BandSelect {
+			db.Model(&band).Related(&band.Band)
+			bookings[i].BandSelect[j].Band = band.Band
+		}
 
 		if bookings[i].BandID != nil {
 			band := model.Band{}
