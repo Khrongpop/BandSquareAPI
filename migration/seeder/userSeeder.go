@@ -109,9 +109,22 @@ func UserSeed(db *gorm.DB) {
 		RoleID:    2,
 	})
 
-	// #####################   9 ########################
+	// #####################   8 ########################
+
 	db.Create(&model.User{
 		ID:        9,
+		Name:      "Middleway",
+		Email:     "middleway@gmail.com",
+		Password:  hashAndSalt([]byte("123456")),
+		Image:     "https://lensod-user-statics.s3-ap-southeast-1.amazonaws.com/f2881fb5-686f-45bc-9eee-96ec1486cba6.png",
+		Thumbnail: "https://lensod-user-statics.s3-ap-southeast-1.amazonaws.com/f2881fb5-686f-45bc-9eee-96ec1486cba6.png",
+		Active:    true,
+		RoleID:    2,
+	})
+
+	// #####################   10 ########################
+	db.Create(&model.User{
+		ID:        10,
 		Name:      "DJ Bright",
 		Email:     "dj_bright@gmail.com",
 		Password:  hashAndSalt([]byte("123456")),
@@ -121,9 +134,9 @@ func UserSeed(db *gorm.DB) {
 		RoleID:    2,
 	})
 
-	// #####################   10 ########################
+	// #####################   11 ########################
 	db.Create(&model.User{
-		ID:        10,
+		ID:        11,
 		Name:      "DJ ARiSTO",
 		Email:     "dj_aristo@gmail.com",
 		Password:  hashAndSalt([]byte("123456")),
@@ -133,9 +146,9 @@ func UserSeed(db *gorm.DB) {
 		RoleID:    2,
 	})
 
-	// #####################   11 ########################
+	// #####################   12 ########################
 	db.Create(&model.User{
-		ID:        11,
+		ID:        12,
 		Name:      "HEXTHREE",
 		Email:     "HEXTHREE@gmail.com",
 		Password:  hashAndSalt([]byte("123456")),
@@ -145,9 +158,9 @@ func UserSeed(db *gorm.DB) {
 		RoleID:    2,
 	})
 
-	// #####################   12 ########################
+	// #####################   13 ########################
 	db.Create(&model.User{
-		ID:        12,
+		ID:        13,
 		Name:      "Arm",
 		Email:     "arm@gmail.com",
 		Password:  hashAndSalt([]byte("123456")),
@@ -157,9 +170,9 @@ func UserSeed(db *gorm.DB) {
 		RoleID:    1,
 	})
 
-	// #####################   13 ########################
+	// #####################   14 ########################
 	db.Create(&model.User{
-		ID:        13,
+		ID:        14,
 		Name:      "Bank",
 		Email:     "bank@gmail.com",
 		Password:  hashAndSalt([]byte("123456")),
@@ -169,9 +182,9 @@ func UserSeed(db *gorm.DB) {
 		RoleID:    1,
 	})
 
-	// #####################   14 ########################
+	// #####################   15 ########################
 	db.Create(&model.User{
-		ID:        14,
+		ID:        15,
 		Name:      "PuenXXX",
 		Email:     "puen@gmail.com",
 		Password:  hashAndSalt([]byte("123456")),
@@ -181,9 +194,9 @@ func UserSeed(db *gorm.DB) {
 		RoleID:    1,
 	})
 
-	// #####################   15 ########################
+	// #####################   16 ########################
 	db.Create(&model.User{
-		ID:        15,
+		ID:        16,
 		Name:      "TubWanXXX",
 		Email:     "tubtub@gmail.com",
 		Password:  hashAndSalt([]byte("123456")),
@@ -193,9 +206,9 @@ func UserSeed(db *gorm.DB) {
 		RoleID:    1,
 	})
 
-	// #####################   16 ########################
+	// #####################   17 ########################
 	db.Create(&model.User{
-		ID:        16,
+		ID:        17,
 		Name:      "Tle",
 		Email:     "tle@gmail.com",
 		Password:  hashAndSalt([]byte("123456")),
@@ -205,9 +218,9 @@ func UserSeed(db *gorm.DB) {
 		RoleID:    1,
 	})
 
-	// #####################   17 ########################
+	// #####################   18 ########################
 	db.Create(&model.User{
-		ID:        17,
+		ID:        18,
 		Name:      "Boss",
 		Email:     "boss@gmail.com",
 		Password:  hashAndSalt([]byte("123456")),
