@@ -597,6 +597,9 @@ func bandAcceptBooking(c echo.Context) error {
 
 	db.Model(&bookingBand).Update("status", 1)
 	res.Message = `Accept Success`
+
+	booking := model.Booking{}
+	db.Model(&booking).Where("id = ?", c.FormValue(`booking_id`)).Update("status", 1)
 	return c.JSON(http.StatusOK, res)
 }
 func bandDiscardtBooking(c echo.Context) error {

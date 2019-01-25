@@ -31,6 +31,7 @@ type Booking struct {
 	// Genres           []Genre   `json:"genres"`
 	// BandSelect []Band  `gorm:"many2many:booking_bands" json:"band_select"`
 	Genres []Genre `gorm:"many2many:booking_genres" json:"genres"`
+	// MessageCheck *string `json:"messageCheck"`
 }
 
 type BookingBand struct {
