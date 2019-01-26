@@ -68,6 +68,7 @@ func main() {
 	bands := e.Group("/band")
 	bands.GET("/bands", bandslist)
 	bands.GET("/recommend", bandOnline)
+	bands.GET("/onlines", bandOnline)
 	bands.GET("/detail/:id", testbandDetail)
 	bands.POST("/recommend", bandRecommend)
 	bands.POST("/onlines", bandOnline)
@@ -293,7 +294,7 @@ func bandRecommend(c echo.Context) error {
 
 func bandOnline(c echo.Context) error {
 	bands := []model.Band{}
-	db.Joins("JOIN users ON bands.user_id = users.id AND users.active = ?", 1).Find(&bands)
+	db.Joins("JOIN users ON bands.user_id = users.id AND users.active = ?", 1).Limit(5).Find(&bands)
 	for i := range bands {
 		bands[i] = getBandTitle(bands[i])
 		// bands[i] = getBandDetail(bands[i])
@@ -652,9 +653,19 @@ func getCurrentBooking(c echo.Context) error {
 		db.Model(&bookings[i]).Related(&bookings[i].Type)
 		db.Model(&bookings[i]).Related(&bookings[i].Genres, "genres")
 		db.Model(&bookings[i]).Related(&bookings[i].BandSelect, "booking_id")
-		for j, band := range bookings[i].BandSelect {
-			db.Model(&band).Related(&band.Band)
-			bookings[i].BandSelect[j].Band = band.Band
+		for j, bandselect := range bookings[i].BandSelect {
+			db.Model(&bandselect).Related(&bandselect.Band)
+			user := model.User{}
+			db.First(&user, bandselect.Band.UserID)
+
+			band := model.Band{}
+			band = bandselect.Band
+			db.Model(&band).Related(&band.Reviews)
+			rateAvg := model.GetRateAVG(band.Reviews)
+			band.RateAvg = &rateAvg
+
+			bookings[i].BandSelect[j].Band = band
+			bookings[i].BandSelect[j].Band.User = &user
 		}
 
 		if bookings[i].BandID != nil {
