@@ -103,8 +103,8 @@ func UserSeed(db *gorm.DB) {
 		Name:      "Mouth Smell Milk Music Group",
 		Email:     "msmmg@gmail.com",
 		Password:  hashAndSalt([]byte("123456")),
-		Image:     "https://lensod-user-statics.s3-ap-southeast-1.amazonaws.com/f2881fb5-686f-45bc-9eee-96ec1486cba6.png",
-		Thumbnail: "https://lensod-user-statics.s3-ap-southeast-1.amazonaws.com/f2881fb5-686f-45bc-9eee-96ec1486cba6.png",
+		Image:     "https://lensod-user-statics.s3-ap-southeast-1.amazonaws.com/1cc5745f-d4b6-4787-84d8-d52224b28b32.jpeg",
+		Thumbnail: "https://lensod-user-statics.s3-ap-southeast-1.amazonaws.com/1cc5745f-d4b6-4787-84d8-d52224b28b32.jpeg",
 		Active:    true,
 		RoleID:    2,
 	})
