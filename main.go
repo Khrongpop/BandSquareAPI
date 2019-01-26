@@ -95,11 +95,13 @@ func main() {
 	bookings.POST("/current_booking", getCurrentBooking)
 	bookings.POST("/current_booking_band", getCurrentBookingBand)
 	bookings.POST("/quick_booking", quickBook)
+	bookings.POST("/booking", booking)
 	bookings.POST("/select_band", selectBandBooking)
 	bookings.POST("/band_accept", bandAcceptBooking)
 	bookings.POST("/band_discard", bandDiscardtBooking)
 	bookings.POST("/payment", paymentBandBooking)
 	bookings.POST("/confirm", confirmBooking)
+	bookings.POST("/review", reviewBooking)
 	bookings.GET("/testcurbooking/:id", getCurrentBookingBand)
 
 	notifications := e.Group("/notification")
@@ -371,7 +373,7 @@ func bandTypes(c echo.Context) error {
 
 func bandBookings(c echo.Context) error {
 	bookings := []model.Booking{}
-	if err := db.Find(&bookings, "band_id = ?", c.FormValue("band_id")).Error; gorm.IsRecordNotFoundError(err) {
+	if err := db.Order("created_at desc").Find(&bookings, "band_id = ?", c.FormValue("band_id")).Error; gorm.IsRecordNotFoundError(err) {
 
 	}
 	for i := range bookings {
@@ -383,7 +385,7 @@ func bandBookings(c echo.Context) error {
 }
 func bandReviews(c echo.Context) error {
 	reviews := []model.Review{}
-	if err := db.Find(&reviews, "band_id = ?", c.FormValue("band_id")).Error; gorm.IsRecordNotFoundError(err) {
+	if err := db.Order("created_at desc").Find(&reviews, "band_id = ?", c.FormValue("band_id")).Error; gorm.IsRecordNotFoundError(err) {
 
 	}
 	for i := range reviews {
@@ -572,6 +574,75 @@ func quickBook(c echo.Context) error {
 	return c.JSON(http.StatusOK, booking)
 }
 
+func booking(c echo.Context) error {
+
+	userID, err := strconv.ParseUint(c.FormValue(`user_id`), 10, 64)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	lat, err := strconv.ParseFloat(c.FormValue(`latitude`), 64)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	lon, err := strconv.ParseFloat(c.FormValue(`longitude`), 64)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	input := c.FormValue(`date`) + " " + c.FormValue(`time`)
+	layout := "2006-01-02 05:05:05"
+	t, _ := time.Parse(layout, input)
+
+	catID, err := strconv.ParseUint(c.FormValue(`category_id`), 10, 64)
+	if err != nil {
+		fmt.Println(err)
+	}
+	typeID, err := strconv.ParseUint(c.FormValue(`type_id`), 10, 64)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	price, err := strconv.ParseFloat(c.FormValue(`price`), 64)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	booking := model.Booking{
+		UserID:     uint(userID),
+		CategoryID: uint(catID),
+		TypeID:     uint(typeID),
+		Location:   c.FormValue(`location`),
+		DateTime:   t,
+		Latitude:   lat,
+		Longitude:  lon,
+		Duration:   c.FormValue(`duration`),
+		Price:      price,
+	}
+	db.Create(&booking)
+
+	band := model.Band{}
+	db.First(&band, c.FormValue(`band_id`))
+
+	db.Create(&model.BookingBand{
+		BandID:    int(band.ID),
+		BookingID: int(booking.ID),
+	})
+
+	user := model.User{}
+	db.First(&user, userID)
+
+	db.Create(&model.Notification{
+		BookingID: getID(int(booking.ID)),
+		UserID:    int(band.UserID),
+		Title:     `new Order`,
+		Detail:    `new Order by ` + user.Name,
+	})
+
+	return c.JSON(http.StatusOK, booking)
+}
+
 func selectBandBooking(c echo.Context) error {
 	res := Response{}
 	booking := model.Booking{}
@@ -579,8 +650,11 @@ func selectBandBooking(c echo.Context) error {
 		res.Message = `Not Found Booking`
 		return c.JSON(http.StatusOK, res)
 	}
-
-	db.Model(&booking).Updates(map[string]interface{}{"band_id": c.FormValue(`band_id`), "status": 2})
+	bandID, err := strconv.ParseUint(c.FormValue(`band_id`), 10, 64)
+	if err != nil {
+		fmt.Println(err)
+	}
+	db.Model(&booking).Where(`id = ?`, c.FormValue(`booking_id`)).Updates(map[string]interface{}{"band_id": bandID, "status": 2})
 
 	res.Message = `Select Band Success`
 	return c.JSON(http.StatusOK, res)
@@ -633,6 +707,80 @@ func paymentBandBooking(c echo.Context) error {
 func confirmBooking(c echo.Context) error {
 	res := Response{}
 	booking := model.Booking{}
+
+	userID, err := strconv.ParseUint(c.FormValue(`user_id`), 10, 64)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	bandID, err := strconv.ParseUint(c.FormValue(`band_id`), 10, 64)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	bookingID, err := strconv.ParseUint(c.FormValue(`booking_id`), 10, 64)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	rate, err := strconv.ParseFloat(c.FormValue(`rate`), 64)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	review := model.Review{
+		UserID:    uint(userID),
+		BandID:    uint(bandID),
+		BookingID: uint(bookingID),
+		Rate:      float32(rate),
+		Detail:    c.FormValue(`detail`),
+	}
+
+	db.Create(&review)
+
+	if err := db.First(&booking, c.FormValue(`booking_id`)).Error; gorm.IsRecordNotFoundError(err) {
+		res.Message = `Not Found Booking`
+		return c.JSON(http.StatusOK, res)
+	}
+	db.Model(&booking).Update("status", 4)
+	res.Message = `Confirm Success`
+	return c.JSON(http.StatusOK, res)
+}
+
+func reviewBooking(c echo.Context) error {
+	res := Response{}
+	booking := model.Booking{}
+
+	userID, err := strconv.ParseUint(c.FormValue(`user_id`), 10, 64)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	bandID, err := strconv.ParseUint(c.FormValue(`band_id`), 10, 64)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	bookingID, err := strconv.ParseUint(c.FormValue(`booking_id`), 10, 64)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	rate, err := strconv.ParseFloat(c.FormValue(`rate`), 64)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	review := model.Review{
+		UserID:    uint(userID),
+		BandID:    uint(bandID),
+		BookingID: uint(bookingID),
+		Rate:      float32(rate),
+		Detail:    c.FormValue(`detail`),
+	}
+
+	db.Create(&review)
+
 	if err := db.First(&booking, c.FormValue(`booking_id`)).Error; gorm.IsRecordNotFoundError(err) {
 		res.Message = `Not Found Booking`
 		return c.JSON(http.StatusOK, res)
@@ -644,7 +792,7 @@ func confirmBooking(c echo.Context) error {
 
 func getCurrentBooking(c echo.Context) error {
 	bookings := []model.Booking{}
-	if err := db.Find(&bookings, `user_id = ?`, c.FormValue(`user_id`)).Error; gorm.IsRecordNotFoundError(err) {
+	if err := db.Order("created_at desc").Find(&bookings, `user_id = ?`, c.FormValue(`user_id`)).Error; gorm.IsRecordNotFoundError(err) {
 		return c.JSON(http.StatusOK, `booking`)
 	}
 	for i := range bookings {
@@ -683,7 +831,7 @@ func getCurrentBookingBand(c echo.Context) error {
 	band := model.Band{}
 	db.First(&band, `user_id = ?`, c.FormValue(`user_id`))
 	bookings := []model.Booking{}
-	if err := db.Find(&bookings, `band_id = ?`, band.ID).Error; gorm.IsRecordNotFoundError(err) {
+	if err := db.Order("created_at desc").Find(&bookings, `band_id = ?`, band.ID).Error; gorm.IsRecordNotFoundError(err) {
 		return c.JSON(http.StatusOK, `booking`)
 	}
 	for i := range bookings {
