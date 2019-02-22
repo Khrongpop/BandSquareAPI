@@ -225,8 +225,10 @@ func disableUser(c echo.Context) error {
 
 func getCurrentBand(c echo.Context) error {
 	band := model.Band{}
-	db.First(&band, `user_id = ?`, c.FormValue("id"))
-	// db.Model(&band).Where("id = ?", c.FormValue("id")).Update("active", true)
+	db.First(&band, `user_id = ?`, c.FormValue("user_id"))
+	db.Model(&band).Related(&band.Reviews)
+	rateAvg := model.GetRateAVG(band.Reviews)
+	band.RateAvg = &rateAvg
 	return c.JSON(http.StatusOK, band)
 }
 
