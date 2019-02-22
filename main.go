@@ -64,6 +64,7 @@ func main() {
 	auth.POST("/enable", enableUser)
 	auth.POST("/disable", disableUser)
 	auth.POST("/favourite", getFavourite)
+	auth.POST("/band_register", bandRegister)
 
 	bands := e.Group("/band")
 	bands.GET("/bands", bandslist)
@@ -162,6 +163,12 @@ func register(c echo.Context) error {
 		return c.JSON(http.StatusOK, user)
 	}
 	return c.JSON(http.StatusOK, "already have an user")
+}
+
+func bandRegister(c echo.Context) error {
+	res := Response{}
+	res.Message = `test`
+	return c.JSON(http.StatusOK, res)
 }
 
 func fblogin(c echo.Context) error {
