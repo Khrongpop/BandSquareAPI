@@ -65,6 +65,7 @@ func main() {
 	auth.POST("/disable", disableUser)
 	auth.POST("/favourite", getFavourite)
 	auth.POST("/band_register", bandRegister)
+	auth.POST("/current_band", getCurrentBand)
 
 	bands := e.Group("/band")
 	bands.GET("/bands", bandslist)
@@ -140,7 +141,6 @@ func login(c echo.Context) error {
 			favourites[i].User = &userBand
 		}
 		user.Favourites = favourites
-
 		return c.JSON(http.StatusOK, user)
 	} else {
 		return c.JSON(http.StatusOK, "invalid password")
@@ -163,12 +163,6 @@ func register(c echo.Context) error {
 		return c.JSON(http.StatusOK, user)
 	}
 	return c.JSON(http.StatusOK, "already have an user")
-}
-
-func bandRegister(c echo.Context) error {
-	res := Response{}
-	res.Message = `test`
-	return c.JSON(http.StatusOK, res)
 }
 
 func fblogin(c echo.Context) error {
@@ -227,6 +221,13 @@ func disableUser(c echo.Context) error {
 	user := model.User{}
 	db.Model(&user).Where("id = ?", c.FormValue("id")).Update("active", false)
 	return c.JSON(http.StatusOK, `disable_user_sucsees`)
+}
+
+func getCurrentBand(c echo.Context) error {
+	band := model.Band{}
+	db.First(&band, `user_id = ?`, c.FormValue("id"))
+	// db.Model(&band).Where("id = ?", c.FormValue("id")).Update("active", true)
+	return c.JSON(http.StatusOK, band)
 }
 
 func getFavourite(c echo.Context) error {
@@ -478,6 +479,270 @@ func storeChat(c echo.Context) error {
 	res := Response{}
 	res.Message = `create chat sucsess`
 	return c.JSON(http.StatusOK, res)
+}
+
+func bandRegister(c echo.Context) error {
+	res := Response{}
+
+	userID, err := strconv.ParseUint(c.FormValue(`user_id`), 10, 64)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	minPrice, err := strconv.ParseInt(c.FormValue(`minPrice`), 10, 64)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	maxPrice, err := strconv.ParseInt(c.FormValue(`maxPrice`), 10, 64)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	band := model.Band{
+		WorkLocation: c.FormValue(`location`),
+		MinPrice:     minPrice,
+		MaxPrice:     maxPrice,
+		About:        c.FormValue(`about`),
+		Member:       c.FormValue(`member`),
+		UserID:       uint(userID),
+		Cover:        c.FormValue(`coverURL`),
+	}
+
+	db.Create(&band)
+
+	res.Message = `test`
+
+	genresSTR := strings.Split(c.FormValue(`genres_id`), `,`)
+	genres := []int64{}
+	for _, gen := range genresSTR {
+		genreID, err := strconv.ParseInt(gen, 10, 64)
+		if err != nil {
+			fmt.Println(err)
+		}
+		genres = append(genres, genreID)
+	}
+
+	categoriesSTR := strings.Split(c.FormValue(`categores_id`), `,`)
+	categories := []int64{}
+	for _, cate := range categoriesSTR {
+		categoryID, err := strconv.ParseInt(cate, 10, 64)
+		if err != nil {
+			fmt.Println(err)
+		}
+		categories = append(categories, categoryID)
+	}
+
+	typesSTR := strings.Split(c.FormValue(`types_id`), `,`)
+	types := []int64{}
+	for _, ty := range typesSTR {
+		typeID, err := strconv.ParseInt(ty, 10, 64)
+		if err != nil {
+			fmt.Println(err)
+		}
+		types = append(types, typeID)
+	}
+
+	for _, categoryID := range categories {
+		db.Create(&model.BandCategory{
+			BandID:     int(band.ID),
+			CategoryID: int(categoryID),
+		})
+	}
+
+	for _, genreID := range genres {
+		db.Create(&model.BandGenre{
+			BandID:  int(band.ID),
+			GenreID: int(genreID),
+		})
+	}
+
+	acousticImageStr := strings.Split(c.FormValue(`acousticImageStr`), `,`)
+	acousticImages := []string{}
+	for _, image := range acousticImageStr {
+		acousticImages = append(acousticImages, image)
+	}
+
+	acousticVideoStr := strings.Split(c.FormValue(`acousticVideoStr`), `,`)
+	acousticVideos := []string{}
+	for _, video := range acousticVideoStr {
+		acousticVideos = append(acousticVideos, video)
+	}
+
+	fullbandImageStr := strings.Split(c.FormValue(`fullbandImageStr`), `,`)
+	fullbandImages := []string{}
+	for _, image := range fullbandImageStr {
+		fullbandImages = append(fullbandImages, image)
+	}
+
+	fullbandVideoStr := strings.Split(c.FormValue(`fullbandVideoStr`), `,`)
+	fullbandVideos := []string{}
+	for _, video := range fullbandVideoStr {
+		fullbandVideos = append(fullbandVideos, video)
+	}
+
+	djImageStr := strings.Split(c.FormValue(`djImageStr`), `,`)
+	djImages := []string{}
+	for _, image := range djImageStr {
+		djImages = append(djImages, image)
+	}
+
+	djVideoStr := strings.Split(c.FormValue(`djVideoStr`), `,`)
+	djVideos := []string{}
+	for _, video := range djVideoStr {
+		djVideos = append(djVideos, video)
+	}
+
+	stringImageStr := strings.Split(c.FormValue(`stringImageStr`), `,`)
+	stringImages := []string{}
+	for _, image := range stringImageStr {
+		stringImages = append(stringImages, image)
+	}
+
+	stringVideoStr := strings.Split(c.FormValue(`stringVideoStr`), `,`)
+	stringVideos := []string{}
+	for _, video := range stringVideoStr {
+		stringVideos = append(stringVideos, video)
+	}
+
+	jazzImageStr := strings.Split(c.FormValue(`jazzImageStr`), `,`)
+	jazzImages := []string{}
+	for _, image := range jazzImageStr {
+		jazzImages = append(jazzImages, image)
+	}
+
+	jazzVideoStr := strings.Split(c.FormValue(`jazzVideoStr`), `,`)
+	jazzVideos := []string{}
+	for _, video := range jazzVideoStr {
+		jazzVideos = append(jazzVideos, video)
+	}
+
+	for _, typeID := range types {
+		if typeID == 1 {
+			bandType := model.BandType{
+				BandID: int(band.ID),
+				TypeID: int(typeID),
+				Detail: c.FormValue(`acousticAbout`),
+			}
+			db.Create(&bandType)
+			for _, image := range acousticImages {
+				db.Create(&model.BandImage{
+					Image:      image,
+					Thumbnail:  image,
+					BandtypeID: bandType.ID,
+				})
+			}
+			for _, videoCode := range acousticVideos {
+				db.Create(&model.BandVideo{
+					Code:       videoCode,
+					Video:      `https://www.youtube.com/watch?v=` + videoCode,
+					BandtypeID: bandType.ID,
+				})
+			}
+		} else if typeID == 2 {
+			bandType := model.BandType{
+				BandID: int(band.ID),
+				TypeID: int(typeID),
+				Detail: c.FormValue(`fullbandAbout`),
+			}
+			db.Create(&bandType)
+			for _, image := range fullbandImages {
+				db.Create(&model.BandImage{
+					Image:      image,
+					Thumbnail:  image,
+					BandtypeID: bandType.ID,
+				})
+			}
+			for _, videoCode := range fullbandVideos {
+				db.Create(&model.BandVideo{
+					Code:       videoCode,
+					Video:      `https://www.youtube.com/watch?v=` + videoCode,
+					BandtypeID: bandType.ID,
+				})
+			}
+		} else if typeID == 3 {
+			bandType := model.BandType{
+				BandID: int(band.ID),
+				TypeID: int(typeID),
+				Detail: c.FormValue(`djAbout`),
+			}
+			db.Create(&bandType)
+			for _, image := range djImages {
+				db.Create(&model.BandImage{
+					Image:      image,
+					Thumbnail:  image,
+					BandtypeID: bandType.ID,
+				})
+			}
+			for _, videoCode := range djVideos {
+				db.Create(&model.BandVideo{
+					Code:       videoCode,
+					Video:      `https://www.youtube.com/watch?v=` + videoCode,
+					BandtypeID: bandType.ID,
+				})
+			}
+		} else if typeID == 4 {
+			bandType := model.BandType{
+				BandID: int(band.ID),
+				TypeID: int(typeID),
+				Detail: c.FormValue(`stringAbout`),
+			}
+			db.Create(&bandType)
+			for _, image := range stringImages {
+				db.Create(&model.BandImage{
+					Image:      image,
+					Thumbnail:  image,
+					BandtypeID: bandType.ID,
+				})
+			}
+			for _, videoCode := range stringVideos {
+				db.Create(&model.BandVideo{
+					Code:       videoCode,
+					Video:      `https://www.youtube.com/watch?v=` + videoCode,
+					BandtypeID: bandType.ID,
+				})
+			}
+		} else if typeID == 5 {
+			bandType := model.BandType{
+				BandID: int(band.ID),
+				TypeID: int(typeID),
+				Detail: c.FormValue(`jazzAbout`),
+			}
+			db.Create(&bandType)
+			for _, image := range jazzImages {
+				db.Create(&model.BandImage{
+					Image:      image,
+					Thumbnail:  image,
+					BandtypeID: bandType.ID,
+				})
+			}
+			for _, videoCode := range jazzVideos {
+				db.Create(&model.BandVideo{
+					Code:       videoCode,
+					Video:      `https://www.youtube.com/watch?v=` + videoCode,
+					BandtypeID: bandType.ID,
+				})
+			}
+		}
+
+	}
+
+	user := model.User{}
+	db.First(&user, userID)
+	user.RoleID = 2
+	db.Save(&user)
+
+	db.Model(&user).Related(&user.Role)
+	favourites := []model.Band{}
+	db.Joins("JOIN favourites ON favourites.band_id = bands.id AND favourites.user_id = ?", user.ID).Find(&favourites)
+	for i, band := range favourites {
+		userBand := model.User{}
+		db.First(&userBand, band.UserID)
+		favourites[i].User = &userBand
+	}
+	user.Favourites = favourites
+
+	return c.JSON(http.StatusOK, user)
 }
 
 func quickBook(c echo.Context) error {
