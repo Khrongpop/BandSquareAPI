@@ -281,10 +281,11 @@ func checkFavourite(c echo.Context) error {
 
 func getNotification(c echo.Context) error {
 	notifitions := []model.Notification{}
-	booking := model.Booking{}
+
 	db.Order("created_at desc").Find(&notifitions, `user_id = ?`, c.FormValue(`user_id`))
 	for i := range notifitions {
 		db.Model(&notifitions[i]).Related(&notifitions[i].User)
+		booking := model.Booking{}
 		db.First(&booking, `id = ?`, notifitions[i].BookingID)
 		db.Model(&booking).Related(&booking.User)
 		db.Model(&booking).Related(&booking.Category)
