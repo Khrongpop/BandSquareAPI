@@ -108,6 +108,7 @@ func main() {
 
 	notifications := e.Group("/notification")
 	notifications.POST("/get_user_noti", getNotification)
+	notifications.POST("/seen_noti", readNotification)
 
 	// TEST API
 	bands.GET("/info/:id", testbandInfo)
@@ -933,9 +934,19 @@ func selectBandBooking(c echo.Context) error {
 	res.Message = `Select Band Success`
 	return c.JSON(http.StatusOK, res)
 }
+
+func readNotification(c echo.Context) error {
+	res := Response{}
+	noti := model.Notification{}
+	db.Model(&noti).Where(`id = ?`, c.FormValue(`id`)).Update(`seen`, true)
+	res.Message = `Seen NOti Success`
+	return c.JSON(http.StatusOK, res)
+}
+
 func bandAcceptBooking(c echo.Context) error {
 	res := Response{}
 	band := model.Band{}
+	noti := model.Notification{}
 	db.First(&band, `user_id = ?`, c.FormValue(`user_id`))
 
 	bookingBand := model.BookingBand{}
@@ -949,6 +960,7 @@ func bandAcceptBooking(c echo.Context) error {
 
 	booking := model.Booking{}
 	db.Model(&booking).Where("id = ?", c.FormValue(`booking_id`)).Update("status", 1)
+	db.Model(&noti).Where("user_id = ? AND booking_id = ?", c.FormValue(`user_id`), c.FormValue(`booking_id`)).Update("status", 2)
 	return c.JSON(http.StatusOK, res)
 }
 func bandDiscardtBooking(c echo.Context) error {

@@ -1,6 +1,7 @@
 package model
 
 import (
+	"math"
 	"time"
 )
 
@@ -86,14 +87,15 @@ func GetCategoryList(band Band) string {
 }
 
 func GetRateAVG(reviews []Review) float32 {
-	rateAvg := float32(0)
+	rateAvg := float64(0)
 	reviewCount := len(reviews)
 	if reviewCount > 0 {
-		rateSum := float32(0)
+		rateSum := float64(0)
 		for _, review := range reviews {
-			rateSum += review.Rate
+			rateSum += float64(review.Rate)
 		}
-		rateAvg = rateSum / float32(reviewCount)
+		rateAvg = rateSum / float64(reviewCount)
 	}
-	return rateAvg
+	rateAvg = math.Round(rateAvg*100) / 100
+	return float32(rateAvg)
 }

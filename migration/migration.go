@@ -117,9 +117,9 @@ func RefreshDB(db *gorm.DB) {
 	// db.AutoMigrate(&model.Review{})
 	// db.AutoMigrate(&model.Favourite{})
 	// db.AutoMigrate(&model.Chat{})
-	// db.AutoMigrate(&model.Notification{})
+	db.AutoMigrate(&model.Notification{})
 
 	fmt.Println("seed table ...")
-	dataSeed(db)
+	// dataSeed(db)
 	fmt.Println("migrate complete !!!")
 }
