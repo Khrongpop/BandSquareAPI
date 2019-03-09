@@ -30,18 +30,11 @@ func main() {
 	// fmt.Println(t.Format("02-Jan-2006")) // 31-Aug-2017
 	viper.AutomaticEnv()
 	port := ":" + viper.GetString("port")
-	// port := ":1323"
-	// datasource := viper.GetString("CLEARDB_DATABASE_URL")
 
-	mysqlUser := "b85b02f8218929"
-	mysqlPass := "1642c1e7"
-	mysqlHost := "us-cdbr-iron-east-01.cleardb.net"
-	mysqlName := "heroku_a5a40c45511bb84"
-
-	// mysqlUser := viper.GetString("MYSQLUSER")
-	// mysqlPass := viper.GetString("MYSQLPASS")
-	// mysqlHost := viper.GetString("MYSQLHOST")
-	// mysqlName := viper.GetString("MYSQLName")
+	mysqlUser := viper.GetString("MYSQLUSER")
+	mysqlPass := viper.GetString("MYSQLPASS")
+	mysqlHost := viper.GetString("MYSQLHOST")
+	mysqlName := viper.GetString("MYSQLNAME")
 	mysqlConfig := "charset=utf8&parseTime=true"
 
 	databaseURL := fmt.Sprintf("%v:%v@tcp(%v)/%v?%v", mysqlUser, mysqlPass, mysqlHost, mysqlName, mysqlConfig)
