@@ -23,13 +23,21 @@ var err error
 
 func main() {
 
-	// input := "2017-08-31"
-	// layout := "2006-01-02"
+	// input := "2019-04-21 05:34:25"
+	// layout := "2019-04-21"
 	// t, _ := time.Parse(layout, input)
-	// fmt.Println(t)                       // 2017-08-31 00:00:00 +0000 UTC
-	// fmt.Println(t.Format("02-Jan-2006")) // 31-Aug-2017
+
+	// input := c.FormValue(`date`)
+	// layout := "2006-01-02"
+
+	// input := "2017-08-31"
+	// layout := "2006-01-02 15:04:05"
+	// t, _ := time.Parse(layout, input)
+	// fmt.Println(t)                               // 2017-08-31 00:00:00 +0000 UTC
+	// fmt.Println(t.Format("2006-01-02 15:04:05")) // 31-Aug-2017
+
 	viper.AutomaticEnv()
-	port := ":" + viper.GetString("port")
+	port := ":" + viper.GetString("PORT")
 
 	mysqlUser := viper.GetString("MYSQLUSER")
 	mysqlPass := viper.GetString("MYSQLPASS")
@@ -47,7 +55,7 @@ func main() {
 	e := echo.New()
 
 	e.GET("/", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Hello, World! test")
+		return c.String(http.StatusOK, "Hello, World!!!!!")
 	})
 
 	auth := e.Group("/auth")
@@ -59,6 +67,7 @@ func main() {
 	auth.POST("/favourite", getFavourite)
 	auth.POST("/band_register", bandRegister)
 	auth.POST("/current_band", getCurrentBand)
+	auth.POST("/get_currentwork", getCurrentWork)
 
 	bands := e.Group("/band")
 	bands.GET("/bands", bandslist)
@@ -270,6 +279,29 @@ func checkFavourite(c echo.Context) error {
 	}
 	response.Status = true
 	return c.JSON(http.StatusOK, response)
+}
+
+func getCurrentWork(c echo.Context) error {
+	works := []model.Booking{}
+	band := model.Band{}
+	db.First(&band, "user_id = ? ", c.FormValue(`user_id`))
+	db.Find(&works, "band_id = ?", band.ID)
+	for i := range works {
+		db.Model(&works[i]).Related(&works[i].User)
+		db.Model(&works[i]).Related(&works[i].Category)
+		db.Model(&works[i]).Related(&works[i].Type)
+
+		// dateTimeLayout := "2006-01-02 05:05:05"
+		// dateLayout := "2006-01-02"
+		// timeLayout := "05:05:05"
+		// dateTimeFormat := works[i].DateTime.Format(dateTimeLayout)
+		// dateFormat := works[i].DateTime.Format(dateLayout)
+		// timeFormat := works[i].DateTime.Format(timeLayout)
+		// works[i].Timeformat = &dateTimeFormat
+		// works[i].Time = &dateFormat
+		// works[i].Date = &timeFormat
+	}
+	return c.JSON(http.StatusOK, works)
 }
 
 func getNotification(c echo.Context) error {
@@ -800,8 +832,11 @@ func quickBook(c echo.Context) error {
 		fmt.Println(err)
 	}
 
-	input := c.FormValue(`date`) + " " + c.FormValue(`time`)
-	layout := "2006-01-02 05:05:05"
+	dateStr := c.FormValue(`date`)
+	timeStr := c.FormValue(`time`)
+	input := dateStr + " " + timeStr
+	layout := "2006-01-02 15:04:05"
+
 	t, _ := time.Parse(layout, input)
 
 	booking := model.Booking{
@@ -814,6 +849,8 @@ func quickBook(c echo.Context) error {
 		Longitude:  lon,
 		Duration:   c.FormValue(`duration`),
 		Price:      price,
+		Time:       &timeStr,
+		Date:       &dateStr,
 	}
 	db.Create(&booking)
 
@@ -860,10 +897,6 @@ func booking(c echo.Context) error {
 		fmt.Println(err)
 	}
 
-	input := c.FormValue(`date`) + " " + c.FormValue(`time`)
-	layout := "2006-01-02 05:05:05"
-	t, _ := time.Parse(layout, input)
-
 	catID, err := strconv.ParseUint(c.FormValue(`category_id`), 10, 64)
 	if err != nil {
 		fmt.Println(err)
@@ -878,6 +911,13 @@ func booking(c echo.Context) error {
 		fmt.Println(err)
 	}
 
+	dateStr := c.FormValue(`date`)
+	timeStr := c.FormValue(`time`)
+	input := dateStr + " " + timeStr
+	layout := "2006-01-02 15:04:05"
+
+	t, _ := time.Parse(layout, input)
+
 	booking := model.Booking{
 		UserID:     uint(userID),
 		CategoryID: uint(catID),
@@ -888,6 +928,8 @@ func booking(c echo.Context) error {
 		Longitude:  lon,
 		Duration:   c.FormValue(`duration`),
 		Price:      price,
+		Time:       &timeStr,
+		Date:       &dateStr,
 	}
 	db.Create(&booking)
 
@@ -1328,7 +1370,7 @@ func list(c echo.Context) error {
 func bandslist(c echo.Context) error {
 	bands := []model.Band{}
 	db.Find(&bands)
-	for i, _ := range bands {
+	for i := range bands {
 		// db.Model(&users[i]).Related(&users[i].Role)
 		// db.Model(&users[i]).Related(&users[i].Band)
 		// users[i].Band = band
