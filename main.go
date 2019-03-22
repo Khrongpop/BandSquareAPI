@@ -68,6 +68,8 @@ func main() {
 	auth.POST("/band_register", bandRegister)
 	auth.POST("/current_band", getCurrentBand)
 	auth.POST("/get_currentwork", getCurrentWork)
+	auth.POST("/get_work_thisday", getWorkThisDay)
+	auth.POST("/get_overview", getOverView)
 
 	bands := e.Group("/band")
 	bands.GET("/bands", bandslist)
@@ -290,18 +292,61 @@ func getCurrentWork(c echo.Context) error {
 		db.Model(&works[i]).Related(&works[i].User)
 		db.Model(&works[i]).Related(&works[i].Category)
 		db.Model(&works[i]).Related(&works[i].Type)
-
-		// dateTimeLayout := "2006-01-02 05:05:05"
-		// dateLayout := "2006-01-02"
-		// timeLayout := "05:05:05"
-		// dateTimeFormat := works[i].DateTime.Format(dateTimeLayout)
-		// dateFormat := works[i].DateTime.Format(dateLayout)
-		// timeFormat := works[i].DateTime.Format(timeLayout)
-		// works[i].Timeformat = &dateTimeFormat
-		// works[i].Time = &dateFormat
-		// works[i].Date = &timeFormat
 	}
 	return c.JSON(http.StatusOK, works)
+}
+
+func getOverView(c echo.Context) error {
+	bookings := []model.Booking{}
+	band := model.Band{}
+	reviews := []model.Review{}
+	favourites := []model.Favourite{}
+	complete := 0
+	working := 0
+
+	db.First(&band, `user_id = ?`, c.FormValue(`user_id`))
+	db.Find(&bookings, `band_id = ?`, band.ID)
+	for _, booking := range bookings {
+		if booking.Status == 4 {
+			complete++
+		} else if booking.Status == 3 {
+			working++
+		}
+
+	}
+	if err := db.Find(&reviews, "band_id = ?", band.ID).Error; gorm.IsRecordNotFoundError(err) {
+
+	}
+	if err := db.Find(&favourites, "band_id = ?", band.ID).Error; gorm.IsRecordNotFoundError(err) {
+
+	}
+
+	return c.JSON(http.StatusOK, echo.Map{
+		`complete`:   complete,
+		`working`:    working,
+		`review`:     len(reviews),
+		`favourites`: len(favourites),
+	})
+}
+
+func getWorkThisDay(c echo.Context) error {
+	work := model.Booking{}
+	band := model.Band{}
+	dateFormat := time.Now().Format("2006-01-02")
+
+	db.First(&band, "user_id = ? ", c.FormValue(`user_id`))
+	if err := db.First(&work, "band_id = ? AND date = ?", band.ID, dateFormat).Error; gorm.IsRecordNotFoundError(err) {
+		return c.JSON(http.StatusOK, echo.Map{
+			"message": "not have an work",
+			"status":  404,
+		})
+	}
+
+	db.Model(&work).Related(&work.User)
+	db.Model(&work).Related(&work.Category)
+	db.Model(&work).Related(&work.Type)
+
+	return c.JSON(http.StatusOK, work)
 }
 
 func getNotification(c echo.Context) error {
