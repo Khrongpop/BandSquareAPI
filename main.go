@@ -120,6 +120,10 @@ func main() {
 	notifications.POST("/get_user_noti", getNotification)
 	notifications.POST("/seen_noti", readNotification)
 
+	admin := e.Group("/admin")
+	admin.POST("/login", adminLogin)
+	admin.POST("/get_user", getUsers)
+
 	// TEST API
 	bands.GET("/info/:id", testbandInfo)
 	bands.GET("/types/:id", testbandTypes)
@@ -1464,6 +1468,33 @@ func refreshDB(c echo.Context) error {
 	return c.JSON(http.StatusOK, echo.Map{
 		"result": "refres-success",
 	})
+}
+
+//////////// ADMIN////////////////
+
+func adminLogin(c echo.Context) error {
+	user := model.User{}
+	name := c.FormValue("name")
+	if err := db.Where("name = ? AND role_id = ?", name, 3).First(&user).Error; gorm.IsRecordNotFoundError(err) {
+		return c.JSON(http.StatusNotFound, "invalid user")
+	}
+	password := c.FormValue("password")
+	check := comparePasswords(user.Password, []byte(password))
+	if check {
+		return c.JSON(http.StatusOK, user)
+	} else {
+		return c.JSON(http.StatusNotFound, "invalid password")
+	}
+}
+
+func getUsers(c echo.Context) error {
+	users := []model.User{}
+	db.Find(&users, `role_id != ?`, 3)
+	for _, user := range users {
+		db.Model(&user).Related(&user.Role)
+	}
+
+	return c.JSON(http.StatusOK, users)
 }
 
 func hashAndSalt(pwd []byte) string {
