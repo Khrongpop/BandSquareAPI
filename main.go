@@ -14,6 +14,7 @@ import (
 	"github.com/khrongpop/BandSquareAPI/migration"
 	"github.com/khrongpop/BandSquareAPI/model"
 	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"
 	"github.com/spf13/viper"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -53,6 +54,11 @@ func main() {
 	defer db.Close()
 	// migration.DBSetup(db)
 	e := echo.New()
+
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"*"},
+		AllowMethods: []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete},
+	}))
 
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Hello, World!!!!!")
