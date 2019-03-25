@@ -123,6 +123,7 @@ func main() {
 	admin := e.Group("/admin")
 	admin.POST("/login", adminLogin)
 	admin.POST("/get_user", getUsers)
+	admin.POST("/get_works", getWorks)
 
 	// TEST API
 	bands.GET("/info/:id", testbandInfo)
@@ -1495,6 +1496,26 @@ func getUsers(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, users)
+}
+
+func getWorks(c echo.Context) error {
+	bookings := []model.Booking{}
+	db.Find(&works)
+	for i := range bookings {
+		db.Model(&bookings[i]).Related(&bookings[i].User)
+		db.Model(&bookings[i]).Related(&bookings[i].Category)
+		db.Model(&bookings[i]).Related(&bookings[i].Type)
+		db.Model(&bookings[i]).Related(&bookings[i].Genres, "genres")
+		if bookings[i].BandID != nil {
+			band := model.Band{}
+			if err := db.First(&band, `id = ?`, bookings[i].BandID).Error; gorm.IsRecordNotFoundError(err) {
+
+			}
+			bookings[i].Band = &band
+		}
+	}
+
+	return c.JSON(http.StatusOK, bookings)
 }
 
 func hashAndSalt(pwd []byte) string {
