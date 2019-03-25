@@ -1500,7 +1500,7 @@ func getUsers(c echo.Context) error {
 
 func getWorks(c echo.Context) error {
 	bookings := []model.Booking{}
-	db.Find(&works)
+	db.Find(&bookings)
 	for i := range bookings {
 		db.Model(&bookings[i]).Related(&bookings[i].User)
 		db.Model(&bookings[i]).Related(&bookings[i].Category)
@@ -1511,6 +1511,9 @@ func getWorks(c echo.Context) error {
 			if err := db.First(&band, `id = ?`, bookings[i].BandID).Error; gorm.IsRecordNotFoundError(err) {
 
 			}
+			user := model.User{}
+			db.First(&user, band.UserID)
+			band.User = &user
 			bookings[i].Band = &band
 		}
 	}
