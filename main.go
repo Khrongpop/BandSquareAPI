@@ -608,7 +608,7 @@ func storeChat(c echo.Context) error {
 
 	// Create norification
 	players := []model.PlayerID{}
-	db.Find(&players, `user_id = ?`, userID)
+	db.Find(&players, `user_id = ?`, c.FormValue(`user_id`))
 	data := `{
 		"page": "chat",
 		"to_id": "3"
