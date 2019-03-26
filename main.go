@@ -119,6 +119,8 @@ func main() {
 	notifications := e.Group("/notification")
 	notifications.POST("/get_user_noti", getNotification)
 	notifications.POST("/seen_noti", readNotification)
+	notifications.POST("/add_player_id", addPlayerID)
+	notifications.POST("/remove_player_id", removePlayerID)
 
 	admin := e.Group("/admin")
 	admin.POST("/login", adminLogin)
@@ -374,6 +376,44 @@ func getNotification(c echo.Context) error {
 		notifitions[i].Booking = &booking
 	}
 	return c.JSON(http.StatusOK, notifitions)
+}
+
+func addPlayerID(c echo.Context) error {
+
+	player := model.PlayerID{}
+	if err := db.First(&player, `user_id = ? AND palyer_id = ?`, c.FormValue(`user_id`), c.FormValue(`player_id`)).Error; gorm.IsRecordNotFoundError(err) {
+
+		userID, err := strconv.ParseUint(c.FormValue(`user_id`), 10, 64)
+		if err != nil {
+			fmt.Println(err)
+		}
+		playerID, err := strconv.ParseUint(c.FormValue(`player_id`), 10, 64)
+		if err != nil {
+			fmt.Println(err)
+		}
+		player.PlayerID = uint(playerID)
+		player.UserID = uint(userID)
+		db.Create(&player)
+		return c.JSON(http.StatusOK, echo.Map{
+			"message": "add player suscess",
+		})
+	}
+	return c.JSON(http.StatusOK, echo.Map{
+		"message": "already have player",
+	})
+}
+
+func removePlayerID(c echo.Context) error {
+	player := model.PlayerID{}
+	if err := db.First(&player, `user_id = ? AND palyer_id = ?`, c.FormValue(`user_id`), c.FormValue(`player_id`)).Error; gorm.IsRecordNotFoundError(err) {
+		return c.JSON(http.StatusOK, echo.Map{
+			"message": "not found player ",
+		})
+	}
+	db.Delete(&player)
+	return c.JSON(http.StatusOK, echo.Map{
+		"message": "remove player suscess",
+	})
 }
 
 func bandRecommend(c echo.Context) error {
