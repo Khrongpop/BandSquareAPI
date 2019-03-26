@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"math/rand"
 	"net/http"
@@ -56,10 +57,11 @@ func main() {
 	defer db.Close()
 	// migration.DBSetup(db)
 	e := echo.New()
-	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: []string{"*"},
-		AllowMethods: []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete},
-	}))
+	e.Use(middleware.CORS())
+	// e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+	// 	AllowOrigins: []string{"*"},
+	// 	AllowMethods: []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete},
+	// }))
 
 	// appID := viper.GetString("OSAPPID")
 	// APIKEY := viper.GetString("OSAPIKEY")
@@ -1628,7 +1630,7 @@ func testNoti(c echo.Context) error {
 	// 	"to_id": "3"
 	// }`
 	// notification.SendPushNotiByPlayerID(players, data, `สวัสดีครับ`)
-
+	//
 	url := "https://onesignal.com/api/v1/notifications"
 	fmt.Println("URL:>", url)
 	viper.AutomaticEnv()
@@ -1636,7 +1638,7 @@ func testNoti(c echo.Context) error {
 	APIKEY := viper.GetString("OSAPIKEY")
 	var jsonStr = []byte(`{
 		"app_id": "` + appID + `",
-		"include_player_ids": ["3ca9a849-bdf7-4986-afea-89bf18c94b6b"],
+		"include_player_ids": ["db480b54-6734-4957-9be8-2a7b8d2b0f20"],
 		"data": {"foo": "bar"},
 		"contents": {"en": "kuyyyyy2323"}
 	  }`)
@@ -1650,11 +1652,43 @@ func testNoti(c echo.Context) error {
 		panic(err)
 	}
 	defer resp.Body.Close()
-	// herokuEmail := viper.GetString("HEROKUEMAIL")
-	// herokuPass := viper.GetString("HEROKUPASS")
-	// client := heroku.Client{Username: herokuEmail, Password: herokuPass}
+	body, _ := ioutil.ReadAll(resp.Body)
+	fmt.Println("response Body:", string(body))
+
 	// response := client.DoReq(req, nil)
-	// println(response)
+	// if response != nil {
+	// 	panic(response.Error)
+	// 	fmt.Println(response)
+	// }
+
+	// url := "https://nameless-river-79098.herokuapp.com/books"
+	// client := &http.Client{}
+	// response, err := client.Get(url)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
+	// defer response.Body.Close()
+	// body, _ := ioutil.ReadAll(response.Body)
+	// fmt.Println("response Body:", string(body))
+
+	// client := onesignal.NewClient(nil)
+	// client.UserKey = APIKEY
+	// client.AppKey = appID
+	// playerID := "3ca9a849-bdf7-4986-afea-89bf18c94b6b"
+	// notificationReq := &onesignal.NotificationRequest{
+	// 	AppID:            appID,
+	// 	Contents:         map[string]string{"en": "English message"},
+	// 	IsIOS:            true,
+	// 	IncludePlayerIDs: []string{playerID},
+	// }
+	// _, _, err := client.Notifications.Create(notificationReq)
+	// if err != nil {
+	// 	print(err)
+	// 	panic(err)
+	// }
+
+	// body, _ := ioutil.ReadAll(res.Body)
+	// fmt.Println("response Body:", string(body))
 
 	return c.JSON(http.StatusOK, players)
 }

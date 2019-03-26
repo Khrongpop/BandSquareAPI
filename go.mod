@@ -12,6 +12,7 @@ require (
 	github.com/mattn/go-isatty v0.0.4 // indirect
 	github.com/pborman/uuid v1.2.0 // indirect
 	github.com/spf13/viper v1.2.1
+	github.com/tbalthazar/onesignal-go v0.0.0-20160928064723-312530be66c8 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v0.0.0-20170224212429-dcecefd839c4 // indirect
 	golang.org/x/crypto v0.0.0-20181112202954-3d3f9f413869
