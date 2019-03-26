@@ -1,9 +1,7 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"math/rand"
 	"net/http"
@@ -1622,73 +1620,14 @@ func getUID(x uint) *uint {
 
 func testNoti(c echo.Context) error {
 	players := []model.PlayerID{}
-	// db.First(&user, userID)
-	// db.Find(&players, `user_id = ?`, 3)
-	// data := `{
-	// 	"page": "chat",
-	// 	"user_id": "41",
-	// 	"to_id": "3"
-	// }`
-	// notification.SendPushNotiByPlayerID(players, data, `สวัสดีครับ`)
-	//
-	url := "https://onesignal.com/api/v1/notifications"
-	fmt.Println("URL:>", url)
-	viper.AutomaticEnv()
-	appID := viper.GetString("OSAPPID")
-	APIKEY := viper.GetString("OSAPIKEY")
-	var jsonStr = []byte(`{
-		"app_id": "` + appID + `",
-		"include_player_ids": ["db480b54-6734-4957-9be8-2a7b8d2b0f20"],
-		"data": {"foo": "bar"},
-		"contents": {"en": "kuyyyyy2323"}
-	  }`)
-	req, _ := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(jsonStr))
-	req.Header.Set("Authorization", "Basic "+APIKEY)
-	req.Header.Set("Content-Type", "application/json; charset=utf-8")
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		panic(err)
-	}
-	defer resp.Body.Close()
-	body, _ := ioutil.ReadAll(resp.Body)
-	fmt.Println("response Body:", string(body))
-
-	// response := client.DoReq(req, nil)
-	// if response != nil {
-	// 	panic(response.Error)
-	// 	fmt.Println(response)
-	// }
-
-	// url := "https://nameless-river-79098.herokuapp.com/books"
-	// client := &http.Client{}
-	// response, err := client.Get(url)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
-	// defer response.Body.Close()
-	// body, _ := ioutil.ReadAll(response.Body)
-	// fmt.Println("response Body:", string(body))
-
-	// client := onesignal.NewClient(nil)
-	// client.UserKey = APIKEY
-	// client.AppKey = appID
-	// playerID := "3ca9a849-bdf7-4986-afea-89bf18c94b6b"
-	// notificationReq := &onesignal.NotificationRequest{
-	// 	AppID:            appID,
-	// 	Contents:         map[string]string{"en": "English message"},
-	// 	IsIOS:            true,
-	// 	IncludePlayerIDs: []string{playerID},
-	// }
-	// _, _, err := client.Notifications.Create(notificationReq)
-	// if err != nil {
-	// 	print(err)
-	// 	panic(err)
-	// }
-
-	// body, _ := ioutil.ReadAll(res.Body)
-	// fmt.Println("response Body:", string(body))
+	db.First(&user, userID)
+	db.Find(&players, `user_id = ?`, 3)
+	data := `{
+		"page": "chat",
+		"user_id": "41",
+		"to_id": "3"
+	}`
+	notification.SendPushNotiByPlayerID(players, data, `สวัสดีครับ`)
 
 	return c.JSON(http.StatusOK, players)
 }
