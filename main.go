@@ -613,7 +613,7 @@ func storeChat(c echo.Context) error {
 		"page": "chat",
 		"to_id": "3"
 	}`
-	fmt.Println(`players` + players)
+	fmt.Println(`players` + string(len(players)))
 	fmt.Println(`data` + data)
 	res := Response{}
 	res.Message = `create chat sucsess`
