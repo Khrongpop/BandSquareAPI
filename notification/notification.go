@@ -4,10 +4,12 @@ import (
 	"bytes"
 	"net/http"
 
+	"github.com/khrongpop/BandSquareAPI/model"
+
 	"github.com/spf13/viper"
 )
 
-func sendPushNotiByPlayerID(playerIDs []string, data string, message string) {
+func SendPushNotiByPlayerID(playerIDs []model.PlayerID, data string, message string) {
 	url := "https://onesignal.com/api/v1/notifications"
 	viper.AutomaticEnv()
 	appID := viper.GetString("OSAPPID")
@@ -19,8 +21,8 @@ func sendPushNotiByPlayerID(playerIDs []string, data string, message string) {
 		"contents": {"en": "` + message + `"}
 	  }`)
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
-	req.Header.Set("Authorization", "Basic "+APIKEY)
 	req.Header.Set("Content-Type", "application/json; charset=utf-8")
+	req.Header.Set("Authorization", "Basic "+APIKEY)
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
@@ -28,17 +30,18 @@ func sendPushNotiByPlayerID(playerIDs []string, data string, message string) {
 		panic(err)
 	}
 	defer resp.Body.Close()
+
 }
 
 func sendPushNoti() {
 
 }
 
-func genPlayerIDS(arry []string) string {
+func genPlayerIDS(players []model.PlayerID) string {
 	mySTR := ``
-	for i, str := range arry {
-		mySTR = mySTR + `'` + str + `'`
-		if i < len(arry)-1 {
+	for i, player := range players {
+		mySTR = mySTR + `"` + player.PlayerID + `"`
+		if i < len(players)-1 {
 			mySTR = mySTR + `,`
 		}
 	}

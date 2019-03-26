@@ -46,7 +46,7 @@ type FavouriteCheck struct {
 }
 
 type PlayerID struct {
-	ID       uint `gorm:"primary_key" json:"id"`
-	UserID   uint `json:"user_id"`
-	PlayerID uint `json:"player_id"`
+	ID       uint   `gorm:"primary_key" json:"id"`
+	UserID   uint   `json:"user_id"`
+	PlayerID string `json:"player_id"`
 }

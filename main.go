@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"log"
 	"math/rand"
@@ -13,6 +14,7 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/khrongpop/BandSquareAPI/migration"
 	"github.com/khrongpop/BandSquareAPI/model"
+	"github.com/khrongpop/BandSquareAPI/notification"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	"github.com/spf13/viper"
@@ -54,14 +56,19 @@ func main() {
 	defer db.Close()
 	// migration.DBSetup(db)
 	e := echo.New()
-
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"*"},
 		AllowMethods: []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete},
 	}))
 
+	// appID := viper.GetString("OSAPPID")
+	// APIKEY := viper.GetString("OSAPIKEY")
 	e.GET("/", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Hello, World!!!!!")
+		return c.JSON(http.StatusOK, echo.Map{
+			"message": "Hello Word!!!!!",
+			// "appID":   appID,
+			// "APIKEY":  APIKEY,
+		})
 	})
 
 	auth := e.Group("/auth")
@@ -136,6 +143,7 @@ func main() {
 	// e.GET("/favourite", getFavourite)
 
 	e.GET("/db/refesh", refreshDB)
+	e.GET("/testnoti", testNoti)
 
 	e.Logger.Fatal(e.Start(port))
 
@@ -381,17 +389,13 @@ func getNotification(c echo.Context) error {
 func addPlayerID(c echo.Context) error {
 
 	player := model.PlayerID{}
-	if err := db.First(&player, `user_id = ? AND palyer_id = ?`, c.FormValue(`user_id`), c.FormValue(`player_id`)).Error; gorm.IsRecordNotFoundError(err) {
+	if err := db.First(&player, `user_id = ? AND player_id = ?`, c.FormValue(`user_id`), c.FormValue(`player_id`)).Error; gorm.IsRecordNotFoundError(err) {
 
 		userID, err := strconv.ParseUint(c.FormValue(`user_id`), 10, 64)
 		if err != nil {
 			fmt.Println(err)
 		}
-		playerID, err := strconv.ParseUint(c.FormValue(`player_id`), 10, 64)
-		if err != nil {
-			fmt.Println(err)
-		}
-		player.PlayerID = uint(playerID)
+		player.PlayerID = c.FormValue(`player_id`)
 		player.UserID = uint(userID)
 		db.Create(&player)
 		return c.JSON(http.StatusOK, echo.Map{
@@ -405,7 +409,7 @@ func addPlayerID(c echo.Context) error {
 
 func removePlayerID(c echo.Context) error {
 	player := model.PlayerID{}
-	if err := db.First(&player, `user_id = ? AND palyer_id = ?`, c.FormValue(`user_id`), c.FormValue(`player_id`)).Error; gorm.IsRecordNotFoundError(err) {
+	if err := db.First(&player, `user_id = ? AND player_id = ?`, c.FormValue(`user_id`), c.FormValue(`player_id`)).Error; gorm.IsRecordNotFoundError(err) {
 		return c.JSON(http.StatusOK, echo.Map{
 			"message": "not found player ",
 		})
@@ -603,6 +607,19 @@ func storeChat(c echo.Context) error {
 	db.Create(&chat)
 	res := Response{}
 	res.Message = `create chat sucsess`
+
+	// Create norification
+	// user := model.User{}
+	players := []model.PlayerID{}
+	// db.First(&user, userID)
+	db.Find(&players, `user_id = ?`, userID)
+	data := `{
+		"page": "chat",
+		"user_id": "` + c.FormValue(`to_id`) + `",
+		"to_id": "` + c.FormValue(`user_id`) + `"
+	}`
+	notification.SendPushNotiByPlayerID(players, data, c.FormValue(`message`))
+
 	return c.JSON(http.StatusOK, res)
 }
 
@@ -1599,4 +1616,45 @@ func getID(x int) *int {
 }
 func getUID(x uint) *uint {
 	return &x
+}
+
+func testNoti(c echo.Context) error {
+	players := []model.PlayerID{}
+	// db.First(&user, userID)
+	// db.Find(&players, `user_id = ?`, 3)
+	// data := `{
+	// 	"page": "chat",
+	// 	"user_id": "41",
+	// 	"to_id": "3"
+	// }`
+	// notification.SendPushNotiByPlayerID(players, data, `สวัสดีครับ`)
+
+	url := "https://onesignal.com/api/v1/notifications"
+	fmt.Println("URL:>", url)
+	viper.AutomaticEnv()
+	appID := viper.GetString("OSAPPID")
+	APIKEY := viper.GetString("OSAPIKEY")
+	var jsonStr = []byte(`{
+		"app_id": "` + appID + `",
+		"include_player_ids": ["3ca9a849-bdf7-4986-afea-89bf18c94b6b"],
+		"data": {"foo": "bar"},
+		"contents": {"en": "kuyyyyy2323"}
+	  }`)
+	req, _ := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(jsonStr))
+	req.Header.Set("Authorization", "Basic "+APIKEY)
+	req.Header.Set("Content-Type", "application/json; charset=utf-8")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+	// herokuEmail := viper.GetString("HEROKUEMAIL")
+	// herokuPass := viper.GetString("HEROKUPASS")
+	// client := heroku.Client{Username: herokuEmail, Password: herokuPass}
+	// response := client.DoReq(req, nil)
+	// println(response)
+
+	return c.JSON(http.StatusOK, players)
 }

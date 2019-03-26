@@ -119,7 +119,7 @@ func RefreshDB(db *gorm.DB) {
 	// db.AutoMigrate(&model.Favourite{})
 	// db.AutoMigrate(&model.Chat{})
 	// db.AutoMigrate(&model.Notification{})
-	// db.AutoMigrate(&model.PlayerID{})
+	db.AutoMigrate(&model.PlayerID{})
 
 	fmt.Println("seed table ...")
 	// dataSeed(db)
