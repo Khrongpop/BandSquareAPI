@@ -12,19 +12,20 @@ type Role struct {
 
 type User struct {
 	// gorm.Model
-	ID         uint      `gorm:"primary_key" json:"id"`
-	Name       string    `json:"name"`
-	Email      string    `json:"email"`
-	Password   string    `json:"password"`
-	Image      string    `json:"image"`
-	Thumbnail  string    `json:"thumbnail"`
-	Active     bool      `gorm:"default:0" json:"active"`
-	RoleID     int8      `gorm:"default:1" json:"role_id"`
-	Role       Role      `json:"role"`
-	Band       *Band     `json:"band"`
-	CreatedAt  time.Time `json:"created_at"`
-	UpdatedAt  time.Time `json:"updated_at"`
-	Favourites []Band    `json:"favourites"`
+	ID         uint       `gorm:"primary_key" json:"id"`
+	Name       string     `json:"name"`
+	Email      string     `json:"email"`
+	Password   string     `json:"password"`
+	Image      string     `json:"image"`
+	Thumbnail  string     `json:"thumbnail"`
+	Active     bool       `gorm:"default:0" json:"active"`
+	RoleID     int8       `gorm:"default:1" json:"role_id"`
+	Role       Role       `json:"role"`
+	Band       *Band      `json:"band"`
+	CreatedAt  time.Time  `json:"created_at"`
+	UpdatedAt  time.Time  `json:"updated_at"`
+	Favourites []Band     `json:"favourites"`
+	PlayerIDs  []PlayerID `json:"player_ids"`
 	// Favourites []Band `gorm:"many2many:favourites" json:"favourites"`
 }
 
@@ -42,4 +43,10 @@ type SocailAccount struct {
 
 type FavouriteCheck struct {
 	Status bool `json:"status"`
+}
+
+type PlayerID struct {
+	ID       uint `gorm:"primary_key" json:"id"`
+	UserID   uint `json:"user_id"`
+	PlayerID uint `json:"player_id"`
 }
