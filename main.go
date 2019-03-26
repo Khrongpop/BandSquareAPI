@@ -615,8 +615,7 @@ func storeChat(c echo.Context) error {
 	db.Find(&players, `user_id = ?`, userID)
 	data := `{
 		"page": "chat",
-		"user_id": "` + c.FormValue(`to_id`) + `",
-		"to_id": "` + c.FormValue(`user_id`) + `"
+		"to_id": "3"
 	}`
 	notification.SendPushNotiByPlayerID(players, data, c.FormValue(`message`))
 
