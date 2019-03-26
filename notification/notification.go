@@ -2,6 +2,8 @@ package notification
 
 import (
 	"bytes"
+	"fmt"
+	"io/ioutil"
 	"net/http"
 
 	"github.com/khrongpop/BandSquareAPI/model"
@@ -20,6 +22,8 @@ func SendPushNotiByPlayerID(playerIDs []model.PlayerID, data string, message str
 		"data": ` + data + `,
 		"contents": {"en": "` + message + `"}
 	  }`)
+	println(`[` + genPlayerIDS(playerIDs) + `]`)
+	println(message)
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
 	req.Header.Set("Content-Type", "application/json; charset=utf-8")
 	req.Header.Set("Authorization", "Basic "+APIKEY)
@@ -30,6 +34,9 @@ func SendPushNotiByPlayerID(playerIDs []model.PlayerID, data string, message str
 		panic(err)
 	}
 	defer resp.Body.Close()
+
+	body, _ := ioutil.ReadAll(resp.Body)
+	fmt.Println("response Body:", string(body))
 
 }
 

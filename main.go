@@ -608,17 +608,15 @@ func storeChat(c echo.Context) error {
 
 	// Create norification
 	players := []model.PlayerID{}
-	db.Find(&players, `user_id = ?`, c.FormValue(`user_id`))
+	db.Find(&players, `user_id = ?`, chat.ToID)
 	data := `{
 		"page": "chat",
-		"to_id": "3"
+		"to_id": "` + c.FormValue(`user_id`) + `"
 	}`
-	fmt.Println(`players` + string(len(players)))
-	fmt.Println(`data` + data)
+	notification.SendPushNotiByPlayerID(players, data, c.FormValue(`message`))
+
 	res := Response{}
 	res.Message = `create chat sucsess`
-
-	notification.SendPushNotiByPlayerID(players, data, c.FormValue(`message`))
 
 	return c.JSON(http.StatusOK, res)
 }
