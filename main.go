@@ -1620,7 +1620,6 @@ func getUID(x uint) *uint {
 
 func testNoti(c echo.Context) error {
 	players := []model.PlayerID{}
-	db.First(&user, userID)
 	db.Find(&players, `user_id = ?`, 3)
 	data := `{
 		"page": "chat",
