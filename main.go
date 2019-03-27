@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"math/rand"
@@ -1057,13 +1058,30 @@ func booking(c echo.Context) error {
 
 	user := model.User{}
 	db.First(&user, userID)
-
-	db.Create(&model.Notification{
+	message := `New order from ` + user.Name
+	notifition := &model.Notification{
 		BookingID: getID(int(booking.ID)),
 		UserID:    int(band.UserID),
 		Title:     `new Order`,
-		Detail:    `new Order by ` + user.Name,
-	})
+		Detail:    message,
+	}
+	db.Create(&notifition)
+
+	players := []model.PlayerID{}
+	db.Find(&players, `user_id = ?`, userID)
+
+	db.Model(&notifition).Related(&notifition.User)
+	db.Model(&booking).Related(&booking.User)
+	db.Model(&booking).Related(&booking.Category)
+	db.Model(&booking).Related(&booking.Type)
+	notifition.Booking = &booking
+	payloadJSON, _ := json.Marshal(notifition)
+	data := `{
+		"page": "form_noti",
+		"payload": "` + string(payloadJSON) + `"
+	}`
+
+	notification.SendPushNotiByPlayerID(players, data, message)
 
 	return c.JSON(http.StatusOK, booking)
 }
