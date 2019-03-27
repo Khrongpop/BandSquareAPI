@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"math/rand"
@@ -1075,10 +1074,10 @@ func booking(c echo.Context) error {
 	db.Model(&booking).Related(&booking.Category)
 	db.Model(&booking).Related(&booking.Type)
 	notifition.Booking = &booking
-	payloadJSON, _ := json.Marshal(notifition)
+	// payloadJSON, _ := json.Marshal(notifition)
 	data := `{
 		"page": "form_noti",
-		"payload": "` + string(payloadJSON) + `"
+		"payload": "` + string(notifition) + `"
 	}`
 
 	notification.SendPushNotiByPlayerID(players, data, message)

@@ -102,13 +102,13 @@ func BandTypeSeed(db *gorm.DB) {
 	db.Create(&model.BandType{
 		ID:     16,
 		BandID: 10,
-		TypeID: 13,
+		TypeID: 3,
 		Detail: `Djing Hiphop / Tech House / Basshouse / Trap / Twerk / Bigroom / Groove 90`,
 	})
 	db.Create(&model.BandType{
 		ID:     17,
 		BandID: 11,
-		TypeID: 12,
+		TypeID: 2,
 		Detail: `วงดนตรีฟูลแบนด์ แนวเรกเก้ ดับบ์ (Reggae Dub) ประกอบด้วยเครื่องดนตรี 5 ชิ้น (กลองชุด, เบส, คีย์บอร์ด, ทรอมโบน, แซกโซโฟน) ผสมผสานกับการมิกซ์เสียงแบบ Dub สดๆ`,
 	})
 }
