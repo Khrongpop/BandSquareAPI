@@ -1210,20 +1210,19 @@ func paymentBandBooking(c echo.Context) error {
 
 	user := model.User{}
 	db.First(&user, booking.UserID)
-	message := user.Name + ` has already paid your order.`
-	players := []model.PlayerID{}
 
 	band := model.Band{}
 	db.First(&band, booking.BandID)
-	userBand := model.User{}
-	db.First(&userBand, band.UserID)
 
-	db.Find(&players, `user_id = ?`, userBand.ID)
+	players := []model.PlayerID{}
+	db.Find(&players, `user_id = ?`, band.UserID)
+
 	data := `{
 			"page": "form_noti",
 			"payload": "` + `yoyo` + `"
 		}`
 
+	message := user.Name + ` has already paid your order.`
 	notification.SendPushNotiByPlayerID(players, data, message)
 
 	res.Message = `Payment Success`
