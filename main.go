@@ -1206,7 +1206,6 @@ func paymentBandBooking(c echo.Context) error {
 		res.Message = `Not Found Booking`
 		return c.JSON(http.StatusOK, res)
 	}
-	db.Model(&booking).Update("status", 3)
 
 	user := model.User{}
 	db.First(&user, booking.UserID)
@@ -1225,6 +1224,7 @@ func paymentBandBooking(c echo.Context) error {
 	message := user.Name + ` has already paid your order.`
 	notification.SendPushNotiByPlayerID(players, data, message)
 
+	db.Model(&booking).Update("status", 3)
 	res.Message = `Payment Success`
 	return c.JSON(http.StatusOK, res)
 }
