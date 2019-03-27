@@ -1212,7 +1212,13 @@ func paymentBandBooking(c echo.Context) error {
 	db.First(&user, booking.UserID)
 	message := user.Name + ` has already paid your order.`
 	players := []model.PlayerID{}
-	db.Find(&players, `user_id = ?`, booking.BandID)
+
+	band := model.Band{}
+	db.First(&band, booking.BandID)
+	userBand := model.User{}
+	db.First(&userBand, band.UserID)
+
+	db.Find(&players, `user_id = ?`, userBand.ID)
 	data := `{
 			"page": "form_noti",
 			"payload": "` + `yoyo` + `"
