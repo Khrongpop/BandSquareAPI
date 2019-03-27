@@ -1211,7 +1211,7 @@ func paymentBandBooking(c echo.Context) error {
 	db.First(&user, booking.UserID)
 
 	band := model.Band{}
-	db.First(&band, booking.BandID)
+	db.First(&band, &booking.BandID)
 
 	players := []model.PlayerID{}
 	db.Find(&players, `user_id = ?`, band.UserID)
@@ -1220,6 +1220,9 @@ func paymentBandBooking(c echo.Context) error {
 
 	fmt.Print(`band : `)
 	fmt.Println(band)
+
+	fmt.Print(`bandID : `)
+	fmt.Println((booking.BandID))
 
 	fmt.Print(`players : `)
 	fmt.Println(players)

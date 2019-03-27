@@ -22,8 +22,7 @@ func SendPushNotiByPlayerID(playerIDs []model.PlayerID, data string, message str
 		"data": ` + data + `,
 		"contents": {"en": "` + message + `"}
 	  }`)
-	println(`[` + genPlayerIDS(playerIDs) + `]`)
-	println(message)
+
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
 	req.Header.Set("Content-Type", "application/json; charset=utf-8")
 	req.Header.Set("Authorization", "Basic "+APIKEY)
