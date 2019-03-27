@@ -1143,6 +1143,8 @@ func bandAcceptBooking(c echo.Context) error {
 
 	booking := model.Booking{}
 	db.First(&booking, c.FormValue(`booking_id`))
+	print(`IsQuick : `)
+	print(booking.IsQuick)
 	if booking.IsQuick == true {
 		booking.Status = 1
 
