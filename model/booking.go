@@ -18,6 +18,7 @@ type Booking struct {
 	Duration         string    `json:"duration"`
 	Price            float64   `json:"price"`
 	Instrument       bool      `gorm:"default:false" json:"instrument"`
+	IsQuick          bool      `gorm:"default:false" json:"is_quick"`
 	InstrumentDetail *string   `json:"instrument_detail"`
 	CreatedAt        time.Time `json:"created_at"`
 	UpdatedAt        time.Time `json:"updated_at"`

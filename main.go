@@ -965,6 +965,7 @@ func quickBook(c echo.Context) error {
 		Price:      price,
 		Time:       &timeStr,
 		Date:       &dateStr,
+		IsQuick:    true,
 	}
 	db.Create(&booking)
 
@@ -1141,14 +1142,23 @@ func bandAcceptBooking(c echo.Context) error {
 	res.Message = `Accept Success`
 
 	booking := model.Booking{}
-	db.Model(&booking).Where("id = ?", c.FormValue(`booking_id`)).Update("status", 1)
+	db.First(&booking, c.FormValue(`booking_id`))
+	if booking.IsQuick {
+		booking.Status = 1
+
+	} else {
+		booking.Status = 2
+		booking.BandID = &band.ID
+		// db.Model(&booking).Where("id = ?", c.FormValue(`booking_id`)).Update("status", 2)
+	}
+	db.Save(&booking)
 	db.Model(&noti).Where("user_id = ? AND booking_id = ?", c.FormValue(`user_id`), c.FormValue(`booking_id`)).Update("status", 2)
 
 	user := model.User{}
 	db.First(&user, band.UserID)
 	message := user.Name + ` accepted the order.`
 	players := []model.PlayerID{}
-	db.Find(&players, `user_id = ?`, int(booking.UserID))
+	db.Find(&players, `user_id = ?`, booking.UserID)
 	data := `{
 			"page": "form_noti",
 			"payload": "` + `yoyo` + `"
