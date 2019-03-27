@@ -1143,6 +1143,19 @@ func bandAcceptBooking(c echo.Context) error {
 	booking := model.Booking{}
 	db.Model(&booking).Where("id = ?", c.FormValue(`booking_id`)).Update("status", 1)
 	db.Model(&noti).Where("user_id = ? AND booking_id = ?", c.FormValue(`user_id`), c.FormValue(`booking_id`)).Update("status", 2)
+
+	user := model.User{}
+	db.First(&user, band.UserID)
+	message := user.Name + ` accepted the order.`
+	players := []model.PlayerID{}
+	db.Find(&players, `user_id = ?`, int(booking.UserID))
+	data := `{
+			"page": "form_noti",
+			"payload": "` + `yoyo` + `"
+		}`
+
+	notification.SendPushNotiByPlayerID(players, data, message)
+
 	return c.JSON(http.StatusOK, res)
 }
 func bandDiscardtBooking(c echo.Context) error {
