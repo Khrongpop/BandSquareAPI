@@ -613,7 +613,10 @@ func storeChat(c echo.Context) error {
 		"page": "chat",
 		"to_id": "` + c.FormValue(`user_id`) + `"
 	}`
-	notification.SendPushNotiByPlayerID(players, data, c.FormValue(`message`))
+	user := model.User{}
+	db.First(&user, chat.ToID)
+	message := user.Name + `: ` + c.FormValue(`message`)
+	notification.SendPushNotiByPlayerID(players, data, message)
 
 	res := Response{}
 	res.Message = `create chat sucsess`
