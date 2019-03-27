@@ -1210,12 +1210,9 @@ func paymentBandBooking(c echo.Context) error {
 	user := model.User{}
 	db.First(&user, booking.UserID)
 
-	band := model.Band{}
-	db.First(&band, (&booking.BandID))
-
 	players := []model.PlayerID{}
 	db.Find(&players, `user_id = ?`, c.FormValue(`user_id`))
-	fmt.Println(`user_id : ` + c.FormValue(`user_id`))
+
 	data := `{
 			"page": "form_noti",
 			"payload": "` + `yoyo` + `"
@@ -1268,6 +1265,24 @@ func confirmBooking(c echo.Context) error {
 		return c.JSON(http.StatusOK, res)
 	}
 	db.Model(&booking).Update("status", 4)
+
+	user := model.User{}
+	db.First(&user, booking.UserID)
+
+	band := model.Band{}
+	db.First(&band, bandID)
+
+	players := []model.PlayerID{}
+	db.Find(&players, `user_id = ?`, band.UserID)
+
+	data := `{
+			"page": "form_noti",
+			"payload": "` + `yoyo` + `"
+		}`
+
+	message := user.Name + ` has confirm your order.`
+	notification.SendPushNotiByPlayerID(players, data, message)
+
 	res.Message = `Confirm Success`
 	return c.JSON(http.StatusOK, res)
 }
