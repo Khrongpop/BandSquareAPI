@@ -1185,7 +1185,7 @@ func bandDiscardtBooking(c echo.Context) error {
 
 	user := model.User{}
 	db.First(&user, band.UserID)
-	message := user.Name + ` discard the order.`
+	message := user.Name + ` discard your order.`
 	players := []model.PlayerID{}
 	db.Find(&players, `user_id = ?`, booking.UserID)
 	data := `{
@@ -1207,6 +1207,19 @@ func paymentBandBooking(c echo.Context) error {
 		return c.JSON(http.StatusOK, res)
 	}
 	db.Model(&booking).Update("status", 3)
+
+	user := model.User{}
+	db.First(&user, booking.UserID)
+	message := user.Name + ` has already paid your order.`
+	players := []model.PlayerID{}
+	db.Find(&players, `user_id = ?`, booking.BandID)
+	data := `{
+			"page": "form_noti",
+			"payload": "` + `yoyo` + `"
+		}`
+
+	notification.SendPushNotiByPlayerID(players, data, message)
+
 	res.Message = `Payment Success`
 	return c.JSON(http.StatusOK, res)
 }
