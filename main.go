@@ -1077,7 +1077,7 @@ func booking(c echo.Context) error {
 	// payloadJSON, _ := json.Marshal(notifition)
 	data := `{
 		"page": "form_noti",
-		"payload": "` + string(notifition) + `"
+		"payload": "` + `yoyo` + `"
 	}`
 
 	notification.SendPushNotiByPlayerID(players, data, message)
