@@ -1147,13 +1147,14 @@ func bandAcceptBooking(c echo.Context) error {
 	fmt.Print(booking.IsQuick)
 	if booking.IsQuick == true {
 		booking.Status = 1
-
+		db.Save(&booking)
 	} else {
 		booking.Status = 2
 		booking.BandID = &band.ID
+		db.Save(&booking)
 		// db.Model(&booking).Where("id = ?", c.FormValue(`booking_id`)).Update("status", 2)
 	}
-	db.Save(&booking)
+
 	db.Model(&noti).Where("user_id = ? AND booking_id = ?", c.FormValue(`user_id`), c.FormValue(`booking_id`)).Update("status", 2)
 
 	user := model.User{}
