@@ -1215,6 +1215,14 @@ func paymentBandBooking(c echo.Context) error {
 
 	players := []model.PlayerID{}
 	db.Find(&players, `user_id = ?`, band.UserID)
+	fmt.Print(`user : `)
+	fmt.Println(user)
+
+	fmt.Print(`band : `)
+	fmt.Println(band)
+
+	fmt.Print(`players : `)
+	fmt.Println(players)
 
 	data := `{
 			"page": "form_noti",
