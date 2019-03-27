@@ -984,11 +984,11 @@ func quickBook(c echo.Context) error {
 			BandID:    int(band.ID),
 			BookingID: int(booking.ID),
 		})
-		message := `New order from ` + user.Name
+		message := `New quick booking from ` + user.Name
 		db.Create(&model.Notification{
 			BookingID: getID(int(booking.ID)),
 			UserID:    int(band.UserID),
-			Title:     `New order`,
+			Title:     `New quick booking`,
 			Detail:    message,
 		})
 		players := []model.PlayerID{}
@@ -1175,9 +1175,21 @@ func bandDiscardtBooking(c echo.Context) error {
 		res.Message = `Not Found Booking`
 		return c.JSON(http.StatusOK, res)
 	}
-
+	booking := model.Booking{}
+	db.First(&booking, c.FormValue(`booking_id`))
 	db.Delete(&bookingBand)
 	res.Message = `Discard Success`
+	user := model.User{}
+	db.First(&user, band.UserID)
+	message := user.Name + ` discard the order.`
+	players := []model.PlayerID{}
+	db.Find(&players, `user_id = ?`, booking.UserID)
+	data := `{
+			"page": "form_noti",
+			"payload": "` + `yoyo` + `"
+		}`
+
+	notification.SendPushNotiByPlayerID(players, data, message)
 	return c.JSON(http.StatusOK, res)
 }
 
