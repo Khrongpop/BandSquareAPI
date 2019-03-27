@@ -1176,9 +1176,13 @@ func bandDiscardtBooking(c echo.Context) error {
 		return c.JSON(http.StatusOK, res)
 	}
 	booking := model.Booking{}
+	noti := model.Notification{}
+	db.First(&noti, `user_id = ? AND booking_id = ?`, c.FormValue(`user_id`), bookingBand.BookingID)
+
 	db.First(&booking, c.FormValue(`booking_id`))
 	db.Delete(&bookingBand)
-	res.Message = `Discard Success`
+	db.Delete(&noti)
+
 	user := model.User{}
 	db.First(&user, band.UserID)
 	message := user.Name + ` discard the order.`
@@ -1190,6 +1194,8 @@ func bandDiscardtBooking(c echo.Context) error {
 		}`
 
 	notification.SendPushNotiByPlayerID(players, data, message)
+
+	res.Message = `Discard Success`
 	return c.JSON(http.StatusOK, res)
 }
 
