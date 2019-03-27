@@ -1068,7 +1068,7 @@ func booking(c echo.Context) error {
 	db.Create(&notifition)
 
 	players := []model.PlayerID{}
-	db.Find(&players, `user_id = ?`, userID)
+	db.Find(&players, `user_id = ?`, int(band.UserID))
 
 	db.Model(&notifition).Related(&notifition.User)
 	db.Model(&booking).Related(&booking.User)
