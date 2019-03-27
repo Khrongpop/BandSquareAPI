@@ -983,12 +983,27 @@ func quickBook(c echo.Context) error {
 			BandID:    int(band.ID),
 			BookingID: int(booking.ID),
 		})
+		message := `New order from ` + user.Name
 		db.Create(&model.Notification{
 			BookingID: getID(int(booking.ID)),
 			UserID:    int(band.UserID),
-			Title:     `new Order`,
-			Detail:    `new Order by ` + user.Name,
+			Title:     `New order`,
+			Detail:    message,
 		})
+		players := []model.PlayerID{}
+		db.Find(&players, `user_id = ?`, int(band.UserID))
+
+		// db.Model(&notifition).Related(&notifition.User)
+		// db.Model(&booking).Related(&booking.User)
+		// db.Model(&booking).Related(&booking.Category)
+		// db.Model(&booking).Related(&booking.Type)
+		// notifition.Booking = &booking
+		// payloadJSON, _ := json.Marshal(notifition)
+		data := `{
+			"page": "form_noti",
+			"payload": "` + `yoyo` + `"
+		}`
+		notification.SendPushNotiByPlayerID(players, data, message)
 	}
 
 	return c.JSON(http.StatusOK, booking)
@@ -1061,7 +1076,7 @@ func booking(c echo.Context) error {
 	notifition := &model.Notification{
 		BookingID: getID(int(booking.ID)),
 		UserID:    int(band.UserID),
-		Title:     `new Order`,
+		Title:     `New order`,
 		Detail:    message,
 	}
 	db.Create(&notifition)
