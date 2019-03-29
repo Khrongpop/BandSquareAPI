@@ -102,6 +102,7 @@ func main() {
 	bands.POST("/favourite_check", checkFavourite)
 	bands.POST("/bands_categories", bandCategories)
 	bands.GET("/bands_categories/:id", bandCategories)
+	bands.POST("/get_overview", getBandOverView)
 
 	chats := e.Group("/chat")
 	chats.GET("/testgetchats/:uID", testgetChats)
@@ -346,6 +347,32 @@ func getOverView(c echo.Context) error {
 		`complete`:   complete,
 		`working`:    working,
 		`review`:     len(reviews),
+		`favourites`: len(favourites),
+	})
+}
+
+func getBandOverView(c echo.Context) error {
+	bookings := []model.Booking{}
+	band := model.Band{}
+
+	favourites := []model.Favourite{}
+	complete := 0
+
+	db.First(&band, c.FormValue(`band_id`))
+	db.Find(&bookings, `band_id = ?`, band.ID)
+	for _, booking := range bookings {
+		if booking.Status == 4 {
+			complete++
+		}
+
+	}
+
+	if err := db.Find(&favourites, "band_id = ?", band.ID).Error; gorm.IsRecordNotFoundError(err) {
+
+	}
+
+	return c.JSON(http.StatusOK, echo.Map{
+		`complete`:   complete,
 		`favourites`: len(favourites),
 	})
 }
