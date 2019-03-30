@@ -471,7 +471,7 @@ func bandOnline(c echo.Context) error {
 
 func bandNew(c echo.Context) error {
 	bands := []model.Band{}
-	db.Table("bands").Select("* ").Joins("left join bookings ON bookings.band_id = bands.id ").Where("bookings.id IS NULL").Group("bands.user_id").Order("created_at desc").Limit(5).Scan(&bands)
+	db.Table("bands").Select("* ").Joins("left join bookings ON bookings.band_id = bands.id ").Where("bookings.id IS NULL").Group("bands.user_id").Limit(5).Scan(&bands)
 	for i := range bands {
 		bands[i] = getBandTitle(bands[i])
 		// bands[i] = getBandDetail(bands[i])
