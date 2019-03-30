@@ -537,7 +537,7 @@ func bandTypes(c echo.Context) error {
 
 func bandBookings(c echo.Context) error {
 	bookings := []model.Booking{}
-	if err := db.Order("created_at desc").Find(&bookings, "band_id = ?", c.FormValue("band_id")).Error; gorm.IsRecordNotFoundError(err) {
+	if err := db.Order("created_at desc").Find(&bookings, "band_id = ? AND status = ?", c.FormValue("band_id"), 3).Error; gorm.IsRecordNotFoundError(err) {
 
 	}
 	for i := range bookings {
