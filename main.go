@@ -647,7 +647,7 @@ func storeChat(c echo.Context) error {
 		"to_id": "` + c.FormValue(`user_id`) + `"
 	}`
 	user := model.User{}
-	db.First(&user, chat.ToID)
+	db.First(&user, chat.UserID)
 	message := user.Name + `: ` + c.FormValue(`message`)
 	notification.SendPushNotiByPlayerID(players, data, message)
 
