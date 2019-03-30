@@ -103,6 +103,7 @@ func main() {
 	bands.POST("/bands_categories", bandCategories)
 	bands.GET("/bands_categories/:id", bandCategories)
 	bands.POST("/get_overview", getBandOverView)
+	bands.GET("/news", bandNew)
 
 	chats := e.Group("/chat")
 	chats.GET("/testgetchats/:uID", testgetChats)
