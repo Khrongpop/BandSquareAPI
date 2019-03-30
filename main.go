@@ -1396,7 +1396,7 @@ func getCurrentBooking(c echo.Context) error {
 
 			}
 			userBand := model.User{}
-			db.First(&userBand, band.ID)
+			db.First(&userBand, band.UserID)
 			band.User = &userBand
 			bookings[i].Band = &band
 
