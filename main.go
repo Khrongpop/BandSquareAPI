@@ -1395,7 +1395,11 @@ func getCurrentBooking(c echo.Context) error {
 			if err := db.First(&band, `id = ?`, bookings[i].BandID).Error; gorm.IsRecordNotFoundError(err) {
 
 			}
+			userBand := model.User{}
+			db.First(&userBand, band.ID)
+			band.User = &userBand
 			bookings[i].Band = &band
+
 		}
 	}
 	return c.JSON(http.StatusOK, bookings)
