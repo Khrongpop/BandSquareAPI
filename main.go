@@ -587,11 +587,15 @@ func getChat(c echo.Context) error {
 			if valCheck == 0 {
 				db.Model(&chat).Related(&chat.User)
 				db.Model(&chat).Related(&chat.ToUser, "ToID")
+				time := chat.CreatedAt.Format("2006-01-02 15:04:05")
+				chat.Time = &time
 				userChats = append(userChats, chat)
 			}
 		} else {
 			db.Model(&chat).Related(&chat.User)
 			db.Model(&chat).Related(&chat.ToUser, "ToID")
+			time := chat.CreatedAt.Format("2006-01-02 15:04:05")
+			chat.Time = &time
 			userChats = append(userChats, chat)
 		}
 
@@ -613,6 +617,8 @@ func getChatUser(c echo.Context) error {
 		}
 		db.Model(&chats[i]).Related(&chats[i].User)
 		db.Model(&chats[i]).Related(&chats[i].ToUser, "ToID")
+		time := chats[i].CreatedAt.Format("2006-01-02 15:04:05")
+		chats[i].Time = &time
 	}
 	return c.JSON(http.StatusOK, chats)
 }
