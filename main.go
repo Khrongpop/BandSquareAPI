@@ -456,7 +456,7 @@ func removeUser(c echo.Context) error {
 			"message": "not found user ",
 		})
 	}
-	message := "remove " + user.Name + " success"
+	message := "remove " + user.Name + " success" + c.FormValue(`user_id`) + c.Param(`user_id`)
 	// db.Delete(&user)
 	return c.JSON(http.StatusOK, echo.Map{
 		"message": message,
