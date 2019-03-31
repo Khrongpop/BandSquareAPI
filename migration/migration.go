@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/jinzhu/gorm"
+	"github.com/khrongpop/BandSquareAPI/migration/seeder"
 	"github.com/khrongpop/BandSquareAPI/model"
 )
 
@@ -27,19 +28,19 @@ func dataSeed(db *gorm.DB) {
 	// seeder.CategorySeed(db)
 	// seeder.GenreSeed(db)
 	// seeder.TypeSeed(db)
-	// seeder.UserSeed(db)
-	// seeder.BandSeed(db)
-	// seeder.BandCategorySeed(db)
-	// seeder.BandTypeSeed(db)
-	// seeder.BandImageSeed(db)
-	// seeder.BandVideoSeed(db)
-	// seeder.BandGenreSeed(db)
-	// seeder.BookingSeed(db)
+	seeder.UserSeed(db)
+	seeder.BandSeed(db)
+	seeder.BandCategorySeed(db)
+	seeder.BandTypeSeed(db)
+	seeder.BandImageSeed(db)
+	seeder.BandVideoSeed(db)
+	seeder.BandGenreSeed(db)
+	seeder.BookingSeed(db)
 	// seeder.ReviewSeed(db)
 	// seeder.FavouriteSeed(db)
 	// seeder.ChatSeed(db)
-	// seeder.BookingBandSeed(db)
-	// seeder.BookingGenreSeed(db)
+	seeder.BookingBandSeed(db)
+	seeder.BookingGenreSeed(db)
 	addForeignKey(db)
 }
 
@@ -72,7 +73,7 @@ func addForeignKey(db *gorm.DB) {
 	// db.Model(&model.Chat{}).AddForeignKey("to_id", "users(id)", "cascade", "RESTRICT")
 	// db.Model(&model.Notification{}).AddForeignKey("booking_id", "bookings(id)", "cascade", "RESTRICT")
 	// db.Model(&model.Notification{}).AddForeignKey("user_id", "users(id)", "cascade", "RESTRICT")
-	db.Model(&model.PlayerID{}).AddForeignKey("user_id", "users(id)", "cascade", "RESTRICT")
+	// db.Model(&model.PlayerID{}).AddForeignKey("user_id", "users(id)", "cascade", "RESTRICT")
 
 }
 
@@ -117,11 +118,11 @@ func RefreshDB(db *gorm.DB) {
 	// db.AutoMigrate(&model.BookingGenre{})
 	// db.AutoMigrate(&model.Review{})
 	// db.AutoMigrate(&model.Favourite{})
-	db.AutoMigrate(&model.Chat{})
+	// db.AutoMigrate(&model.Chat{})
 	// db.AutoMigrate(&model.Notification{})
 	// db.AutoMigrate(&model.PlayerID{})
 
 	fmt.Println("seed table ...")
-	// dataSeed(db)
+	dataSeed(db)
 	fmt.Println("migrate complete !!!")
 }
