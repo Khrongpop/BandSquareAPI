@@ -454,12 +454,14 @@ func removeUser(c echo.Context) error {
 	if err := db.First(&user, c.FormValue(`user_id`)).Error; gorm.IsRecordNotFoundError(err) {
 		return c.JSON(http.StatusOK, echo.Map{
 			"message": "not found user ",
+			"status":  404,
 		})
 	}
 	message := "remove " + user.Name + " success"
 	db.Delete(&user)
 	return c.JSON(http.StatusOK, echo.Map{
 		"message": message,
+		"status":  200,
 	})
 }
 
