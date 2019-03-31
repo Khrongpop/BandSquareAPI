@@ -135,6 +135,7 @@ func main() {
 	admin.POST("/login", adminLogin)
 	admin.POST("/get_user", getUsers)
 	admin.POST("/get_works", getWorks)
+	admin.POST("/remove_user", removeUser)
 
 	// TEST API
 	bands.GET("/info/:id", testbandInfo)
@@ -427,7 +428,7 @@ func addPlayerID(c echo.Context) error {
 		player.UserID = uint(userID)
 		db.Create(&player)
 		return c.JSON(http.StatusOK, echo.Map{
-			"message": "add player suscess",
+			"message": "add player success",
 		})
 	}
 	return c.JSON(http.StatusOK, echo.Map{
@@ -444,7 +445,20 @@ func removePlayerID(c echo.Context) error {
 	}
 	db.Delete(&player)
 	return c.JSON(http.StatusOK, echo.Map{
-		"message": "remove player suscess",
+		"message": "remove player success",
+	})
+}
+func removeUser(c echo.Context) error {
+
+	user := model.User{}
+	if err := db.First(&user, c.FormValue(`user_id`)).Error; gorm.IsRecordNotFoundError(err) {
+		return c.JSON(http.StatusOK, echo.Map{
+			"message": "not found user ",
+		})
+	}
+	db.Delete(&user)
+	return c.JSON(http.StatusOK, echo.Map{
+		"message": "remove user success",
 	})
 }
 
